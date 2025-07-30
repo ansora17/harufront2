@@ -10,13 +10,15 @@ import MealCard from "../../components/haruReport/record/MealCard";
 import SubLayout from "../../layout/SubLayout";
 import { useNavigate } from "react-router-dom";
 import MealCalendarModal from "../../components/meal/MealCalendarModal";
+import calculateCalories from "../../components/mypage/calculateCalories";
 
 function Meal() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // 로그인 정보
-  const { isLoggedIn, memberId, user } = useSelector((state) => state.login);
+  const currentUser = useSelector((state) => state.login);
+  const { isLoggedIn, memberId } = currentUser;
 
   // Redux에서 상태 가져오기
   const {
@@ -35,7 +37,22 @@ function Meal() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   // 목표 칼로리
-  const calorieGoal = user?.recommendedCalories || 2000;
+  console.log("Current user data:", currentUser);
+  const calorieGoal =
+    currentUser?.birthAt &&
+    currentUser?.gender &&
+    currentUser?.height &&
+    currentUser?.weight &&
+    currentUser?.activityLevel
+      ? calculateCalories({
+          birthAt: currentUser.birthAt,
+          gender: currentUser.gender,
+          height: currentUser.height,
+          weight: currentUser.weight,
+          activityLevel: currentUser.activityLevel,
+        })
+      : 2000;
+  console.log("Calculated calorie goal:", calorieGoal);
 
   // 날짜 변경 함수
   const changeDate = (days) => {

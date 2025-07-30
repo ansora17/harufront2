@@ -15,6 +15,26 @@ export default function calculateCalories({
   weight,
   activityLevel,
 }) {
+  // Check if all required parameters are provided
+  console.log("calculateCalories input:", {
+    birthAt,
+    gender,
+    height,
+    weight,
+    activityLevel,
+  });
+
+  if (!birthAt || !gender || !height || !weight || !activityLevel) {
+    console.warn("calculateCalories: Missing required parameters", {
+      birthAt,
+      gender,
+      height,
+      weight,
+      activityLevel,
+    });
+    return null;
+  }
+
   const birthDate = new Date(birthAt);
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
@@ -35,5 +55,12 @@ export default function calculateCalories({
     activityFactor = 1.725;
   }
 
-  return Math.round(bmr * activityFactor);
+  const result = Math.round(bmr * activityFactor);
+  console.log("calculateCalories result:", {
+    age,
+    bmr,
+    activityFactor,
+    result,
+  });
+  return result;
 }
