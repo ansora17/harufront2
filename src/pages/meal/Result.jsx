@@ -496,7 +496,7 @@ function Result() {
           <textarea
             className="textarea textarea-bordered w-full"
             placeholder="메모를 입력하세요 (예: 저녁은 간단하게 샌드위치와 주스)"
-            value={memo}
+            value={mealRecord.memo}
             onChange={(e) => setMemo(e.target.value)}
             rows={2}
           />
