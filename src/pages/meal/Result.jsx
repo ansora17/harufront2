@@ -6,11 +6,23 @@ import axios from "axios";
 function Result() {
   const [mealRecord, setMealRecord] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [resultData, setResultData] = useState([]);
   const [error, setError] = useState(null);
+  const [memo, setMemo] = useState("");
   const location = useLocation();
   const { id } = useParams(); // URL 파라미터에서 meal ID 가져오기
   const passedRecord = location.state;
+  const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
+
+  // 음식 제거 함수
+  const handleRemoveImage = (index) => {
+    console.log("음식 제거:", index);
+    // 실제 제거 로직은 나중에 구현
+  };
+
+  // 🔥 음식 카드 클릭 핸들러 추가
+  const handleFoodCardClick = (index) => {
+    setSelectedFoodIndex(selectedFoodIndex === index ? null : index);
+  };
 
   useEffect(() => {
     const fetchMealRecord = async () => {
@@ -50,8 +62,42 @@ function Result() {
           return;
         }
 
-        console.log("처리된 mealData:", mealData);
-        setMealRecord(mealData);
+        // 배열인 경우 전체 배열을 foods로 설정
+        let finalMealData = mealData;
+        if (Array.isArray(mealData) && mealData.length > 0) {
+          // 배열이 음식 데이터인 경우 - totalAmount를 gram으로 매핑
+          const processedFoods = mealData.map((food) => ({
+            ...food,
+            gram: food.gram || food.totalAmount || "알 수 없음",
+          }));
+
+          finalMealData = {
+            foods: processedFoods,
+            totalCalories: mealData.reduce(
+              (sum, food) => sum + (food.calories || 0),
+              0
+            ),
+            totalCarbs: mealData.reduce(
+              (sum, food) =>
+                sum + (food.carbohydrate || food.carbohydrates || 0),
+              0
+            ),
+            totalProtein: mealData.reduce(
+              (sum, food) => sum + (food.protein || 0),
+              0
+            ),
+            totalFat: mealData.reduce((sum, food) => sum + (food.fat || 0), 0),
+            totalSodium: mealData.reduce(
+              (sum, food) => sum + (food.sodium || 0),
+              0
+            ),
+            modifiedAt: new Date().toISOString(),
+            mealType: "LUNCH", // 기본값
+          };
+          console.log("배열을 foods로 변환:", finalMealData);
+        }
+
+        setMealRecord(finalMealData);
       } catch (err) {
         console.error("식사 기록 조회 실패:", err);
         console.error("에러 상세:", err.response?.data);
@@ -80,7 +126,7 @@ function Result() {
         <div className="w-full max-w-[1020px] mx-auto px-4 py-3">
           <div className="flex items-center justify-center py-8">
             <span className="loading loading-spinner loading-lg text-purple-500"></span>
-            <p className="text-purple-600 mt-2 ml-2">
+            <p className="text-purple-500 mt-2 ml-2">
               식사 데이터를 불러오는 중...
             </p>
           </div>
@@ -120,7 +166,7 @@ function Result() {
   return (
     <>
       <SubLayout to={"/"} menu={"식단분석"} label={"식사요약"} />
-      <div className="w-full max-w-[1020px] mx-auto px-4 py-3">
+      <div className="w-full max-w-[1020px] mx-auto px-4 py-4">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
           <input
@@ -177,32 +223,66 @@ function Result() {
 
           {/* 총 섭취량 */}
           <div className="bg-gray-100 rounded-xl p-7 pb-7 mb-6">
-            <div className="flex justify-between font-bold text-lg mb-4 px-10">
+            <div className="flex justify-between font-bold text-lg mb-6 px-10">
               <h2>총 섭취량</h2>
               <div className="flex">
                 <p>
-                  {passedRecord.totalCalories || passedRecord.calories || 0}
+                  {mealRecord.foods && Array.isArray(mealRecord.foods)
+                    ? mealRecord.foods.reduce(
+                        (sum, food) => sum + (food.calories || food.kcal || 0),
+                        0
+                      )
+                    : mealRecord.totalCalories || mealRecord.calories || 0}
                 </p>
                 <span className="text-purple-500">kcal</span>
               </div>
             </div>
-
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-base">
               {[
                 [
                   "탄수화물",
-                  passedRecord.totalCarbs || passedRecord.carbohydrate || 0,
+                  mealRecord.foods && Array.isArray(mealRecord.foods)
+                    ? mealRecord.foods.reduce(
+                        (sum, food) =>
+                          sum +
+                          (food.carbohydrate ||
+                            food.carbohydrates ||
+                            food.carbs ||
+                            0),
+                        0
+                      )
+                    : mealRecord.totalCarbs || mealRecord.carbohydrate || 0,
                 ],
                 [
                   "단백질",
-                  passedRecord.totalProtein || passedRecord.protein || 0,
+                  mealRecord.foods && Array.isArray(mealRecord.foods)
+                    ? mealRecord.foods.reduce(
+                        (sum, food) => sum + (food.protein || 0),
+                        0
+                      )
+                    : mealRecord.totalProtein || mealRecord.protein || 0,
                 ],
-                ["지방", passedRecord.totalFat || passedRecord.fat || 0],
+                [
+                  "지방",
+                  mealRecord.foods && Array.isArray(mealRecord.foods)
+                    ? mealRecord.foods.reduce(
+                        (sum, food) => sum + (food.fat || 0),
+                        0
+                      )
+                    : mealRecord.totalFat || mealRecord.fat || 0,
+                ],
                 [
                   "나트륨",
-                  Math.round(
-                    (passedRecord.totalSodium || passedRecord.sodium || 0) * 10
-                  ) / 10,
+                  mealRecord.foods && Array.isArray(mealRecord.foods)
+                    ? Math.round(
+                        mealRecord.foods.reduce(
+                          (sum, food) => sum + (food.sodium || 0),
+                          0
+                        ) * 10
+                      ) / 10
+                    : Math.round(
+                        (mealRecord.totalSodium || mealRecord.sodium || 0) * 10
+                      ) / 10,
                 ],
               ].map(([label, value], i) => (
                 <div key={i} className="flex flex-col items-center gap-2">
@@ -223,8 +303,8 @@ function Result() {
         </div>
 
         {/* 음식 카테고리 아이콘 카드 수평 슬라이드 */}
-        <div className="overflow-x-auto no-scrollbar mb-8">
-          <div className="flex gap-4 w-max px-1">
+        <div className="overflow-x-auto mb-8 pt-1 scroll-smooth">
+          <div className="flex gap-4 w-max px-1 pb-2 min-w-full">
             {/* 음식 추가 버튼 */}
             <div
               className="min-w-[44px] h-56 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl cursor-pointer"
@@ -234,93 +314,200 @@ function Result() {
             </div>
 
             {/* 🔥 음식 카테고리 아이콘 카드 */}
-            {resultData.map((food, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="relative w-[200px] h-[200px] bg-gray-200 rounded-xl flex items-center justify-center">
-                  {/* 🔥 카테고리별 아이콘 */}
-                  <div className="text-6xl">
-                    {(() => {
-                      const category = food.foodType || "알 수 없음";
-                      switch (category) {
-                        case "한식":
-                          return "🍚";
-                        case "중식":
-                          return "🥢";
-                        case "일식":
-                          return "🍣";
-                        case "양식":
-                          return "🍝";
-                        case "분식":
-                          return "🍢";
-                        case "음료":
-                          return "🥤";
-                        default:
-                          return "🍽️";
-                      }
-                    })()}
-                  </div>
-                  <button
-                    onClick={() => handleRemoveImage(i)}
-                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+            {mealRecord.foods &&
+              Array.isArray(mealRecord.foods) &&
+              mealRecord.foods.map((food, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div
+                    className={`relative w-[200px] h-[200px] bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                      selectedFoodIndex === i
+                        ? "ring-4 ring-purple-500 bg-purple-100"
+                        : ""
+                    }`}
+                    onClick={() => handleFoodCardClick(i)}
                   >
-                    ×
-                  </button>
+                    {/* 🔥 카테고리별 아이콘 */}
+                    <div className="text-6xl">
+                      {(() => {
+                        const category = food.foodCategory || "알 수 없음";
+                        switch (category) {
+                          case "한식":
+                          case "KOREAN":
+                            return "🍚";
+                          case "중식":
+                          case "CHINESE":
+                            return "🥢";
+                          case "일식":
+                          case "JAPANESE":
+                            return "🍣";
+                          case "양식":
+                          case "WESTERN":
+                            return "🍝";
+                          case "분식":
+                          case "SNACK":
+                            return "🍢";
+                          case "음료":
+                          case "BEVERAGE":
+                            return "🥤";
+                          default:
+                            return "🍽️";
+                        }
+                      })()}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage(i);
+                      }}
+                      className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1 mt-2">
+                    <p className="text-sm font-medium text-center">
+                      {food.foodName || "요리명"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      (
+                      {(() => {
+                        const category = food.foodCategory || "카테고리 없음";
+                        switch (category) {
+                          case "KOREAN":
+                            return "한식";
+                          case "CHINESE":
+                            return "중식";
+                          case "JAPANESE":
+                            return "일식";
+                          case "WESTERN":
+                            return "양식";
+                          case "SNACK":
+                            return "분식";
+                          case "BEVERAGE":
+                            return "음료";
+                          default:
+                            return category;
+                        }
+                      })()}
+                      )
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 mt-2">
-                  <p className="text-sm font-medium text-center">
-                    {food.name || "요리명"} {/* 🔥 name으로 변경 */}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    ({food.foodType || "카테고리 없음"})
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
+        {/* 🔥 이미지별 분석 결과는 아래쪽에 세로로 나열 - 필터링 적용 */}
+        {selectedFoodIndex !== null &&
+          mealRecord.foods &&
+          Array.isArray(mealRecord.foods) &&
+          mealRecord.foods[selectedFoodIndex] && (
+            <div
+              key={selectedFoodIndex}
+              className="p-4 mb-5 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-xl font-bold">
+                    {mealRecord.foods[selectedFoodIndex].foodName ||
+                      mealRecord.foods[selectedFoodIndex].name ||
+                      "요리명"}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {mealRecord.foods[selectedFoodIndex].gram ||
+                      mealRecord.foods[selectedFoodIndex].totalAmount ||
+                      "총량 정보 없음"}
+                    g
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                    −
+                  </button>
+                  <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
+                    1
+                  </div>
+                  <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              {/* 영양소 정보 추가 */}
+              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-green-600">칼로리</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].calories ||
+                        mealRecord.foods[selectedFoodIndex].kcal ||
+                        0}{" "}
+                      kcal
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-green-600">탄수화물</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].carbohydrate ||
+                        mealRecord.foods[selectedFoodIndex].carbohydrates ||
+                        mealRecord.foods[selectedFoodIndex].carbs ||
+                        0}
+                      g
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-yellow-600">단백질</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].protein || 0}g
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-red-600">지방</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].fat || 0}g
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                  <div>
+                    <span className="text-blue-600">나트륨</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].sodium || 0}mg
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-orange-600">식이섬유</span>
+                    <div className="font-bold">
+                      {mealRecord.foods[selectedFoodIndex].fiber || 0}g
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         {/* 🔥 메모 입력 필드 추가 */}
+        <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
+          <div className="flex justify-between font-bold text-2xl ">
+            <h2 className="text-lg sm:text-xl font-semibold">메모</h2>
+          </div>
+        </div>
         <div className="mb-4">
           <textarea
             className="textarea textarea-bordered w-full"
             placeholder="메모를 입력하세요 (예: 저녁은 간단하게 샌드위치와 주스)"
-            value={passedRecord.memo}
+            value={memo}
             onChange={(e) => setMemo(e.target.value)}
             rows={2}
           />
         </div>
 
-        {/* 이미지별 분석 결과는 아래쪽에 세로로 나열 */}
-        {resultData.map((data, i) => (
-          <div key={i} className="mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xl font-bold">{data.name || "요리명"}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {data.gram || "총량 정보 없음"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
-                  −
-                </button>
-                <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                  1
-                </div>
-                <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
-                  ＋
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-
         {/* 기록 버튼 */}
-        <div>
-          <button className="btn bg-purple-500 text-white w-full rounded-lg text-base mb-2">
+        <div className="pt-8">
+          <button className="btn bg-purple-500 text-white w-full rounded-lg py-6 text-base mb-2">
             기록하기
           </button>
-          <button className="btn bg-red text-white w-full rounded-lg text-base">
+          <button className="btn bg-red text-white w-full rounded-lg py-6 text-base">
             삭제하기
           </button>
         </div>
