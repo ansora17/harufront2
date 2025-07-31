@@ -29,6 +29,12 @@ function Analyis() {
   const [memo, setMemo] = useState("");
   // 🔥 선택된 음식 인덱스 상태 추가
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
+  // 🔥 이미지 선택 모달 상태 추가
+  const [showImageChoiceModal, setShowImageChoiceModal] = useState(false);
+  // 🔥 이미지 입력 모달 상태 추가
+  const [showImageInputModal, setShowImageInputModal] = useState(false);
+  // 🔥 이미지 URL 입력 상태 추가
+  const [imageInputUrl, setImageInputUrl] = useState("");
 
   // 로그인 정보
   const { isLoggedIn, memberId } = useSelector((state) => state.login);
@@ -117,6 +123,34 @@ function Analyis() {
     }
   };
 
+  // 🔥 음식명 직접 입력 처리 함수 추가
+  const handleFoodNameInput = (foodName) => {
+    if (!foodName) return;
+
+    // 음식명으로 직접 데이터 생성
+    const newFoodData = {
+      name: foodName,
+      calories: 0, // 기본값
+      carbohydrate: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      fiber: 0,
+      gram: "알 수 없음",
+      foodType: "알 수 없음",
+    };
+
+    // 이미지 대신 음식 데이터만 추가
+    setResultData((prev) => [...prev, newFoodData]);
+
+    // 더미 이미지 추가 (UI 표시용)
+    const newImage = {
+      file: null,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7snbTrgqjrjIDtlZjqs6A8L3RleHQ+Cjwvc3ZnPgo=",
+    };
+    setImages((prev) => [...prev, newImage]);
+  };
+
   // 🔥 음식 카드 클릭 핸들러 추가
   const handleFoodCardClick = (index) => {
     setSelectedFoodIndex(selectedFoodIndex === index ? null : index);
@@ -124,6 +158,13 @@ function Analyis() {
 
   // 🔥 개선된 AI 백엔드 통신 함수로 교체
   const sendImageToBackend = async (file, index) => {
+    // 파일 유효성 검사 추가
+    if (!file || file.size === 0) {
+      console.error("유효하지 않은 파일입니다:", file);
+      alert("유효한 이미지 파일을 선택해주세요.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -451,7 +492,7 @@ function Analyis() {
         <div className="border-b border-gray-300">
           {/* 이미지 업로드 */}
           <div
-            className="relative bg-gray-200 h-60 sm:h-64 md:h-72 rounded-xl flex items-center justify-center mb-6 cursor-pointer"
+            className="relative bg-gray-200 h-60 sm:h-64 md:h-82 rounded-xl flex items-center justify-center mb-6 cursor-pointer"
             onClick={handleImageClick}
           >
             {images.length > 0 ? (
@@ -520,11 +561,97 @@ function Analyis() {
           <div className="flex gap-4 w-max px-1 pb-2 min-w-full">
             {/* 음식 추가 버튼 */}
             <div
-              className="min-w-[44px] h-56 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl cursor-pointer"
-              onClick={handleImageClick}
+              className={`min-w-[44px] h-56 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl ${
+                resultData && resultData.length > 0
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed opacity-50"
+              }`}
+              onClick={() => {
+                if (resultData && resultData.length > 0) {
+                  setShowImageChoiceModal(true);
+                }
+                // resultData가 없으면 아무 동작도 하지 않음 (파일 선택도 X)
+              }}
             >
               +
             </div>
+            {/* 이미지 선택/입력 모달 */}
+            {showImageChoiceModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="bg-white rounded-xl p-6 w-80 shadow-lg flex flex-col gap-4">
+                  <h3 className="text-lg font-bold mb-2 text-center">
+                    이미지가 이미 있습니다
+                  </h3>
+                  <p className="text-center text-gray-600 mb-4">
+                    음식을 추가하려면 기존 이미지를 삭제하거나, 아래에서
+                    선택하세요.
+                  </p>
+                  <button
+                    className="btn btn-primary w-full"
+                    onClick={() => {
+                      setShowImageChoiceModal(false);
+                      handleImageClick(); // 파일에서 선택
+                    }}
+                  >
+                    파일에서 선택하기
+                  </button>
+                  <button
+                    className="btn btn-secondary w-full"
+                    onClick={() => {
+                      setShowImageChoiceModal(false);
+                      // 입력하기 로직 (예: URL 입력 등)
+                      setShowImageInputModal(true);
+                    }}
+                  >
+                    직접 입력하기
+                  </button>
+                  <button
+                    className="btn w-full mt-2"
+                    onClick={() => setShowImageChoiceModal(false)}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* 직접 입력 모달 예시 */}
+            {showImageInputModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="bg-white rounded-xl p-6 w-80 shadow-lg flex flex-col gap-4">
+                  <h3 className="text-lg font-bold mb-2 text-center">
+                    음식명 입력
+                  </h3>
+                  <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    placeholder="음식명을 입력하세요"
+                    value={imageInputUrl}
+                    onChange={(e) => setImageInputUrl(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-primary w-full"
+                    onClick={() => {
+                      if (imageInputUrl) {
+                        handleFoodNameInput(imageInputUrl);
+                        setShowImageInputModal(false);
+                        setImageInputUrl("");
+                      }
+                    }}
+                  >
+                    추가하기
+                  </button>
+                  <button
+                    className="btn w-full mt-2"
+                    onClick={() => {
+                      setShowImageInputModal(false);
+                      setImageInputUrl("");
+                    }}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* 🔥 음식 카테고리 아이콘 카드 */}
             {resultData.map((food, i) => (
@@ -564,7 +691,7 @@ function Analyis() {
                       e.stopPropagation(); // 🔥 이벤트 버블링 방지
                       handleRemoveImage(i);
                     }}
-                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+                    className="absolute top-2 right-2 bg-black/40 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
                   >
                     ×
                   </button>

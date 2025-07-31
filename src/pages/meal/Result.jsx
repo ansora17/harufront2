@@ -209,7 +209,7 @@ function Result() {
 
         <div className="border-b border-gray-300">
           {/* 이미지 업로드 박스 */}
-          <div className="bg-gray-200 h-60 sm:h-64 md:h-72 rounded-xl flex items-center justify-center mb-6">
+          <div className="bg-gray-200 h-60 sm:h-64 md:h-82 rounded-xl flex items-center justify-center mb-6">
             {mealRecord.imageUrl ? (
               <img
                 src={mealRecord.imageUrl}
