@@ -124,31 +124,128 @@ function Analyis() {
   };
 
   // 🔥 음식명 직접 입력 처리 함수 추가
-  const handleFoodNameInput = (foodName) => {
+  const handleFoodNameInput = async (foodName) => {
     if (!foodName) return;
 
-    // 음식명으로 직접 데이터 생성
-    const newFoodData = {
-      name: foodName,
-      calories: 0, // 기본값
-      carbohydrate: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      fiber: 0,
-      gram: "알 수 없음",
-      foodType: "알 수 없음",
-    };
+    try {
+      setIsLoading(true);
 
-    // 이미지 대신 음식 데이터만 추가
-    setResultData((prev) => [...prev, newFoodData]);
+      // 🔥 새로운 텍스트 분석 API 호출
+      const AI_API_URL =
+        import.meta.env.VITE_AI_API_URL || "http://localhost:8080";
 
-    // 더미 이미지 추가 (UI 표시용)
-    const newImage = {
-      file: null,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7snbTrgqjrjIDtlZjqs6A8L3RleHQ+Cjwvc3ZnPgo=",
-    };
-    setImages((prev) => [...prev, newImage]);
+      console.log("📤 텍스트 분석 API 요청:", {
+        url: `${AI_API_URL}/api/meals/analyze-food-text`,
+        foodName: foodName,
+        env: import.meta.env.VITE_AI_API_URL ? "설정됨" : "기본값 사용",
+      });
+
+      // 🔥 서버 연결 테스트 추가
+      try {
+        const testResponse = await axios.get(`${AI_API_URL}/health`, {
+          timeout: 5000,
+        });
+        console.log("✅ 서버 연결 확인:", testResponse.status);
+      } catch (testErr) {
+        console.warn("⚠️ 서버 연결 테스트 실패:", testErr.message);
+        console.log(
+          "🔍 서버 상태 확인이 필요합니다. API 요청을 계속 진행합니다."
+        );
+      }
+
+      // 🔥 백엔드 API 구조에 맞게 food_name 필드로 요청
+      const response = await axios.post(
+        `${AI_API_URL}/api/meals/analyze-food-text`,
+        { food_name: foodName },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 30000, // 30초 타임아웃
+        }
+      );
+
+      console.log("📥 텍스트 분석 API 응답:", response.data);
+
+      // 🔥 백엔드 API 응답 구조에 맞게 수정 (success, result 구조)
+      if (response.data && response.data.success && response.data.result) {
+        console.log("텍스트 분석 결과:", response.data);
+
+        const result = response.data.result;
+        console.log("🔍 분석된 음식 데이터:", result);
+
+        // 🔥 백엔드 응답 구조에 맞게 데이터 변환
+        const foodData = {
+          name: result.foodName || foodName,
+          calories: result.calories || 0,
+          carbohydrate: result.carbohydrate || 0,
+          protein: result.protein || 0,
+          fat: result.fat || 0,
+          sodium: result.sodium || 0,
+          fiber: result.fiber || 0,
+          gram: result.totalAmount || "알 수 없음",
+          foodCategory: result.foodCategory || "알 수 없음",
+        };
+
+        console.log("🔍 변환된 음식 데이터:", foodData);
+        const foodDataArray = [foodData];
+
+        // 결과 데이터에 추가
+        setResultData((prev) => [...prev, ...foodDataArray]);
+
+        // 더미 이미지 추가 (UI 표시용)
+        const newImage = {
+          file: null,
+          url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7snbTrgqjrjIDtlZjqs6A8L3RleHQ+Cjwvc3ZnPgo=",
+        };
+        setImages((prev) => [...prev, newImage]);
+
+        // 모달 닫기
+        setShowImageInputModal(false);
+        setImageInputUrl("");
+
+        console.log("✅ 텍스트 분석 완료:", foodDataArray);
+      } else {
+        console.error("텍스트 분석 실패:", response.data);
+        alert(
+          "텍스트 분석에 실패했습니다. 응답 데이터 형식이 올바르지 않습니다."
+        );
+      }
+    } catch (err) {
+      console.error("텍스트 분석 오류:", err);
+
+      let errorMessage = "텍스트 분석 중 오류가 발생했습니다.";
+
+      if (err.response) {
+        console.error("서버 응답 오류:", err.response.data);
+        console.error("상태 코드:", err.response.status);
+        console.error("응답 헤더:", err.response.headers);
+
+        if (err.response.status === 404) {
+          errorMessage =
+            "API 엔드포인트를 찾을 수 없습니다. 서버 설정을 확인해주세요.";
+        } else if (err.response.status === 400) {
+          errorMessage = "잘못된 요청입니다. 음식명을 확인해주세요.";
+        } else if (err.response.status === 500) {
+          errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        } else {
+          errorMessage = `서버 오류 (${err.response.status}): ${
+            err.response.data?.message || err.response.data || "알 수 없는 오류"
+          }`;
+        }
+      } else if (err.request) {
+        console.error("네트워크 오류:", err.request);
+        errorMessage =
+          "서버에 연결할 수 없습니다. 네트워크 연결과 서버 상태를 확인해주세요.";
+      } else {
+        console.error("요청 설정 오류:", err.message);
+        errorMessage = `요청 설정 오류: ${err.message}`;
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 🔥 음식 카드 클릭 핸들러 추가
@@ -209,7 +306,7 @@ function Analyis() {
               sodium: food.sodium || 0,
               fiber: food.fiber || 0,
               gram: food.totalAmount || "알 수 없음",
-              foodType: food.foodCategory || "알 수 없음",
+              foodCategory: food.foodCategory || "알 수 없음",
             };
             console.log(`🔍 음식 ${index + 1} 변환된 데이터:`, foodData);
             return foodData;
@@ -395,7 +492,7 @@ function Analyis() {
         sodium: food.sodium || 0,
         fiber: food.fiber || 0,
         gram: food.gram || "알 수 없음",
-        foodCategory: categoryMap[food.foodType] || "ETC", // 🔥 카테고리 매핑
+        foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
       return foodData;
@@ -630,11 +727,9 @@ function Analyis() {
                   />
                   <button
                     className="btn btn-primary w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       if (imageInputUrl) {
-                        handleFoodNameInput(imageInputUrl);
-                        setShowImageInputModal(false);
-                        setImageInputUrl("");
+                        await handleFoodNameInput(imageInputUrl);
                       }
                     }}
                   >
@@ -667,7 +762,7 @@ function Analyis() {
                   {/* 🔥 카테고리별 아이콘 */}
                   <div className="text-6xl">
                     {(() => {
-                      const category = food.foodType || "알 수 없음";
+                      const category = food.foodCategory || "알 수 없음";
                       switch (category) {
                         case "한식":
                           return "🍚";
