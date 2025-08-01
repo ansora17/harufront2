@@ -97,6 +97,9 @@ export const fetchMonthlyMealRecordsThunk = createAsyncThunk(
           carbs: finalCarbs,
           totalProtein: finalProtein,
           totalFat: finalFat,
+          // 🔥 체중 데이터 포함
+          record_weight: record.record_weight || record.recordWeight,
+          recordWeight: record.record_weight || record.recordWeight,
         };
       });
 
@@ -184,6 +187,9 @@ export const fetchDailyMealRecordsThunk = createAsyncThunk(
           carbs: finalCarbs,
           totalProtein: finalProtein,
           totalFat: finalFat,
+          // 🔥 체중 데이터 포함
+          record_weight: record.record_weight || record.recordWeight,
+          recordWeight: record.record_weight || record.recordWeight,
         };
       });
 

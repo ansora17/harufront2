@@ -535,7 +535,7 @@ const Nutrition = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => changeMonth("prev")}
-              className="btn btn-outline btn-sm hover:bg-purple-100"
+              className="btn  btn-sm hover:bg-purple-100"
               disabled={isMonthlyLoading}
             >
               ◀ 이전 월
@@ -547,7 +547,7 @@ const Nutrition = () => {
 
             <button
               onClick={() => changeMonth("next")}
-              className="btn btn-outline btn-sm hover:bg-purple-100"
+              className="btn  btn-sm hover:bg-purple-100"
               disabled={isMonthlyLoading}
             >
               다음 월 ▶
