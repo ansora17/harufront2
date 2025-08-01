@@ -7,7 +7,7 @@ import Footer from "./Footer";
 function RootLayout() {
   return (
     <>
-      <div className="min-h-screen pb-28">
+      <div className="min-h-screen">
         <Header />
         <Menu />
         <div className="">

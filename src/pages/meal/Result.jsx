@@ -182,7 +182,7 @@ function Result() {
   return (
     <>
       <SubLayout to={"/"} menu={"식단분석"} label={"식사요약"} />
-      <div className="w-full max-w-[1020px] mx-auto px-4 py-4">
+      <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
           <input
@@ -319,7 +319,7 @@ function Result() {
           <div className="flex gap-4 w-max px-1 pb-2 min-w-full">
             {/* 음식 추가 버튼 */}
             <div
-              className="min-w-[44px] h-56 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl cursor-pointer"
+              className="min-w-[44px] h-44 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl cursor-pointer"
               // onClick={handleImageClick}
             >
               +
@@ -331,7 +331,7 @@ function Result() {
               mealRecord.foods.map((food, i) => (
                 <div key={i} className="flex flex-col items-center">
                   <div
-                    className={`relative w-[200px] h-[200px] bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                    className={`relative w-[150px] h-[150px] bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 ${
                       selectedFoodIndex === i
                         ? "ring-4 ring-purple-500 bg-purple-100"
                         : ""
