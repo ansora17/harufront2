@@ -188,6 +188,7 @@ function Analyis() {
           sodium: result.sodium || 0,
           fiber: result.fiber || 0,
           gram: result.totalAmount || "알 수 없음",
+          quantity: result.quantity || 1,
           foodCategory: result.foodCategory || "알 수 없음",
         };
 
@@ -310,6 +311,7 @@ function Analyis() {
               sodium: food.sodium || 0,
               fiber: food.fiber || 0,
               gram: food.totalAmount || "알 수 없음",
+              quantity: food.quantity || 1,
               foodCategory: food.foodCategory || "알 수 없음",
             };
             console.log(`🔍 음식 ${index + 1} 변환된 데이터:`, foodData);
@@ -495,7 +497,8 @@ function Analyis() {
         fat: food.fat || 0,
         sodium: food.sodium || 0,
         fiber: food.fiber || 0,
-        gram: food.gram || "알 수 없음",
+        totalAmount: food.gram || 0, // 🔥 gram을 totalAmount로 매핑
+        quantity: food.quantity || 1, // 🔥 실제 데이터에서 quantity 가져오기, 없으면 1
         foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
@@ -836,7 +839,7 @@ function Analyis() {
                   −
                 </button>
                 <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                  1
+                  {resultData[selectedFoodIndex].quantity || 1}
                 </div>
                 <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
                   ＋
