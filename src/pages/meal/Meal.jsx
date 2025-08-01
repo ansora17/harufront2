@@ -91,7 +91,7 @@ function Meal() {
 
   return (
     <>
-      <div className="p-4 sm:p-6 container mx-auto space-y-8 sm:w-[1020px]">
+      <div className="p-4 mb-28 sm:p-6 container mx-auto space-y-8 sm:w-[1020px]">
         {/* 날짜 선택 */}
         <div className="flex gap-4 items-center justify-center">
           <div
