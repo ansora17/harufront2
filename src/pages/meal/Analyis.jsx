@@ -44,13 +44,13 @@ function Analyis() {
   }, []);
 
   // 로그인 체크
-  if (!isLoggedIn) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500">로그인이 필요한 서비스입니다.</p>
-      </div>
-    );
-  }
+  // if (!isLoggedIn) {
+  //   return (
+  //     <div className="text-center py-8">
+  //       <p className="text-red-500">로그인이 필요한 서비스입니다.</p>
+  //     </div>
+  //   );
+  // }
 
   const handleImageClick = (e) => {
     fileInputRef.current?.click();

@@ -40,3 +40,58 @@ body {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* 🎨 로그인 페이지용 커스텀 애니메이션 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 🎨 부드러운 bounce 애니메이션 */
+@keyframes slowBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce.slow {
+  animation: slowBounce 3s ease-in-out infinite;
+}
+
+/* 🎨 글래스모피즘 효과 */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* 🎨 호버 시 부드러운 확대 효과 */
+.hover-scale {
+  transition: transform 0.3s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}

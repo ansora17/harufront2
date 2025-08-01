@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Footer from "../../layout/Footer";
 
 function WelcomeMain() {
   return (
@@ -168,16 +169,7 @@ function WelcomeMain() {
       </section>
 
       {/* 푸터 */}
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/images/main_icon.png" alt="하루칼로리" className="h-6" />
-          </div>
-          <p className="text-gray-400">
-            © 2025 하루칼로리. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
