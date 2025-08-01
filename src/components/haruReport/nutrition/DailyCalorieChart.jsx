@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   BarChart,
   Bar,
@@ -15,6 +16,11 @@ const DailyCalorieChart = ({ data = [], period = "week" }) => {
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [showTooltip, setShowTooltip] = useState(window.innerWidth > 768);
+
+  // 🔥 Redux에서 사용자의 권장 칼로리 가져오기
+  const loginState = useSelector((state) => state.login);
+  const targetCalories =
+    loginState.targetCalories || loginState.recommendedCalories || 2200; // 기본값 2200
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -37,8 +43,6 @@ const DailyCalorieChart = ({ data = [], period = "week" }) => {
           calories: item.calories,
         }))
       : [{ date: "데이터 없음", calories: 0 }];
-
-  const targetCalories = 2200; // 목표 칼로리 (나중에 사용자 설정값으로 대체)
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

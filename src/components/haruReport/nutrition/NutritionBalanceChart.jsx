@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import {
   BarChart,
   Bar,
@@ -14,11 +15,16 @@ import {
 } from "recharts";
 
 const NutritionBalanceChart = ({ period, data = {} }) => {
-  // 일별 권장 섭취량
+  // 🔥 Redux에서 사용자의 권장 칼로리 가져오기
+  const loginState = useSelector((state) => state.login);
+  const recommendedCalories =
+    loginState.targetCalories || loginState.recommendedCalories || 2200;
+
+  // 🔥 권장 칼로리를 바탕으로 영양소 권장량 계산
   const dailyRecommended = {
-    carbs: 300, // g
-    protein: 60, // g
-    fat: 70, // g
+    carbs: Math.round((recommendedCalories * 0.45) / 4), // 45% of calories from carbs (4kcal/g)
+    protein: Math.round((recommendedCalories * 0.25) / 4), // 25% of calories from protein (4kcal/g)
+    fat: Math.round((recommendedCalories * 0.3) / 9), // 30% of calories from fat (9kcal/g)
   };
 
   // 실제 데이터 처리
