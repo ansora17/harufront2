@@ -531,6 +531,7 @@ function Analyis() {
 
       console.log("✅ 식사 저장 성공:", result);
       alert("식사 기록이 저장되었습니다.");
+      navigate("/dashboard");
 
       // 🔥 폼 초기화
       setImages([]);

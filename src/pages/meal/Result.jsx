@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from "react";
 import SubLayout from "../../layout/SubLayout";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -13,6 +13,7 @@ function Result() {
   const { id } = useParams(); // URL 파라미터에서 meal ID 가져오기
   const passedRecord = location.state;
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
+  const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
 
   // 🔥 현재 사용자 정보 가져오기
   const currentUser = useSelector((state) => state.login);
@@ -549,7 +550,49 @@ function Result() {
           <button className="btn bg-purple-500 text-white w-full rounded-lg py-6 text-base mb-2">
             기록하기
           </button>
-          <button className="btn bg-red text-white w-full rounded-lg py-6 text-base">
+          <button
+            className="btn bg-red text-white w-full rounded-lg py-6 text-base"
+            onClick={async () => {
+              try {
+                // 🔥 mealId를 URL 파라미터나 passedRecord에서 가져오기
+                const mealId = id || passedRecord?.id || mealRecord?.id;
+
+                console.log("삭제할 mealId:", mealId);
+                console.log("mealRecord:", mealRecord);
+
+                if (!mealId) {
+                  alert("삭제할 식사 기록 ID를 찾을 수 없습니다.");
+                  return;
+                }
+
+                const response = await axios.delete(
+                  `http://localhost:8080/api/meals/${mealId}`
+                );
+
+                console.log("삭제 응답:", response);
+
+                if (response.status === 204) {
+                  alert("기록이 삭제되었습니다.");
+                  // 🔥 삭제 성공 시 dashboard 페이지로 이동
+                  navigate("/dashboard");
+                } else {
+                  alert("기록 삭제에 실패했습니다.");
+                }
+              } catch (error) {
+                console.error("삭제 오류:", error);
+                console.error("오류 응답:", error.response?.data);
+                console.error("오류 상태:", error.response?.status);
+
+                if (error.response?.status === 404) {
+                  alert("삭제할 식사 기록을 찾을 수 없습니다.");
+                } else if (error.response?.status === 500) {
+                  alert("서버 오류가 발생했습니다.");
+                } else {
+                  alert("기록 삭제 중 오류가 발생했습니다.");
+                }
+              }
+            }}
+          >
             삭제하기
           </button>
         </div>
