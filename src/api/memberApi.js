@@ -19,14 +19,50 @@ export const loginPost = async (loginParam) => {
     header
   );
 
-  // 출력이 안되므로 아래 코드로 변경
-  // console.log(API_BASE);
+  // 🔍 로그인 응답 디버깅
+  console.log("🔐 로그인 API 응답 확인:");
+  console.log("  - 전체 응답:", response.data);
+  console.log("  - photo 필드:", response.data?.photo);
+  console.log("  - profileImageUrl 필드:", response.data?.profileImageUrl);
+  console.log(
+    "  - 이미지 관련 모든 필드:",
+    Object.keys(response.data || {}).filter(
+      (key) =>
+        key.toLowerCase().includes("image") ||
+        key.toLowerCase().includes("photo")
+    )
+  );
 
   return response.data;
 };
 
-export const updateProfileImage = async (id, profileImage) => {
-  const formData = new FormData();
-  formData.append("profileImage", profileImage);
-  return axios.put(`${API_BASE}/${id}/profile-image`, formData);
+export const updateProfileImage = async (id, profileImageUrl) => {
+  console.log("🔥 프로필 이미지 URL 업데이트:", profileImageUrl);
+  console.log("🔍 사용자 ID:", id);
+
+  // 🔥 성공한 테스트 방식: {"profileImageUrl":"img11.jpg"}
+  const updateData = {
+    profileImageUrl: profileImageUrl,
+  };
+
+  console.log("📤 전송할 데이터:", updateData);
+
+  try {
+    const response = await axios.put(
+      `${API_BASE}/api/members/${id}`,
+      updateData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ 프로필 이미지 업데이트 성공:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ 프로필 이미지 업데이트 실패:", error);
+    console.error("❌ 에러 상세:", error.response?.data);
+    throw error;
+  }
 };

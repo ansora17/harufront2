@@ -67,18 +67,18 @@ function WriteUpdate() {
     }
   };
 
-  // 로딩 중일 때
-  if (loading) {
-    return (
-      <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
-        <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-          <span className="ml-2 text-gray-600">게시글을 불러오는 중...</span>
-        </div>
-      </div>
-    );
-  }
+  // // 로딩 중일 때
+  // if (loading) {
+  //   return (
+  //     <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
+  //       <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
+  //       <div className="flex justify-center items-center py-12">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+  //         <span className="ml-2 text-gray-600">게시글을 불러오는 중...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // 에러 상태
   if (error) {

@@ -8,9 +8,8 @@ function Header() {
   // const doLogout = useLogout();
 
   // Only use Redux state - no more mixed logic
-  const { nickname, weight, memberId, isLoggedIn } = useSelector(
-    (state) => state.login
-  );
+  const { nickname, weight, memberId, isLoggedIn, profileImageUrl } =
+    useSelector((state) => state.login);
   const dispatch = useDispatch();
   const handleLogout = () => {
     // Use the proper logout function that clears everything
@@ -31,17 +30,23 @@ function Header() {
           </Link>
         </h1>
 
-        <ul className="flex gap-3 items-center text-sm">
+        <ul className="flex gap-2 items-center text-sm">
           {isLoggedIn ? (
             <>
+              <img
+                src={profileImageUrl}
+                alt="profile"
+                className="w-8 h-8 rounded-full mr-1"
+              />
               <li>
                 <Link
                   to="/mypage"
                   className="font-semibold text-purple-500 hover:underline"
                 >
-                  {nickname} {weight} kg 님 {memberId}, 반갑습니다!
+                  {nickname} 님 , 반갑습니다!
                 </Link>
               </li>
+              <li></li>
               <li>
                 <button
                   onClick={handleLogout}

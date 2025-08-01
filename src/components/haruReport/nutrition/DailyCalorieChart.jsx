@@ -76,10 +76,9 @@ const DailyCalorieChart = ({ data = [], period = "week" }) => {
 
   return (
     <div ref={containerRef} className="w-full">
-      <div className="mb-2 p-2 flex justify-between">
-        <span className="text-sm text-gray-600">이번달 칼로리 섭취량</span>
-        <div>
-          <span className="text-gray-600">권장 칼로리:</span>
+      <div className="mb-2 p-2 flex justify-end">
+        <div className="flex items-center">
+          <span className="text-gray-600 ">권장 칼로리:</span>
           <span className="ml-2 font-bold">{targetCalories}kcal</span>
         </div>
       </div>
