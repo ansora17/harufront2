@@ -1,10 +1,10 @@
 // import axios from "./axiosInstance";
-import axios from "axios";
+import axios from "./axiosInstance";
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
 // axios 기본 설정
 const axiosConfig = {
-  withCredentials: true, // 쿠키 포함하여 요청 전송
+  // withCredentials는 axiosInstance에서 이미 설정됨
 };
 
 // 회원 가입 (multipart: data + profileImage)
@@ -72,21 +72,26 @@ export const logoutMember = async () => {
 //   return res.data;
 // };
 
-// 프로필 이미지 변경
+// 🔥 Redux에서 토큰 가져오기 위한 import 추가
+// import store from "../../store/store"; // 🔥 올바른 경로로 수정 (default import)
 
-// Supabase에서 받은 public URL을 백엔드로 전송 (MySQL에 저장됨)
+// 프로필 이미지 변경 - 기존 정상 작동하는 엔드포인트 활용
 export const updatePhoto = async (photoUrl) => {
   try {
-    const response = await axios.patch(
-      `${API_BASE}/me/profile-image`,
-      {
-        photoUrl: photoUrl,
-      },
-      axiosConfig
+    console.log(
+      "🔥 프로필 이미지 URL 업데이트 (기존 엔드포인트 활용):",
+      photoUrl
     );
+
+    // 🔥 정상 작동하는 /me 엔드포인트 사용
+    const response = await axios.put(`/api/members/me`, {
+      profileImageUrl: photoUrl, // DTO 필드명에 맞춤
+    });
+
+    console.log("✅ 프로필 이미지 업데이트 성공:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error updating photo:", error);
+    console.error("❌ 프로필 이미지 업데이트 실패:", error);
     throw error;
   }
 };

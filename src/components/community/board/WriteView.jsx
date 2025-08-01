@@ -147,23 +147,8 @@ function WriteView() {
     navigate(`/community/board/update/${id}`);
   };
 
-  // 로딩 상태
-  if (loading) {
-    return (
-      <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
-        <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
-        <div className="mt-6 sm:mt-10">
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            {/* <p className="text-gray-600">게시글을 불러오는 중입니다...</p> */}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 에러 상태
-  if (error || !post) {
+  // 🚨 에러 상태 (실제 에러가 있을 때만)
+  if (error) {
     return (
       <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
         <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
@@ -201,6 +186,16 @@ function WriteView() {
             </Link>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // 🔍 데이터가 없으면 아무것도 렌더링하지 않음 (빠른 로딩을 위해)
+  if (!post) {
+    return (
+      <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
+        <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
+        <div className="mt-6 sm:mt-10"></div>
       </div>
     );
   }

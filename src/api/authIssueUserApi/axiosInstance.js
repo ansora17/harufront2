@@ -47,15 +47,21 @@ instance.interceptors.response.use(
       console.error("❌ Error setting up request:", error.message);
     }
 
+    // 🔥 401 에러 처리 수정 - 자동 리다이렉트 제거
     if (error.response?.status === 401) {
-      console.log("❌ Authentication failed, redirecting to login");
+      console.log("❌ Authentication failed - 401 error");
 
-      // Clear any localStorage tokens if they exist
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      // 🔥 자동 리다이렉트 제거, 로그만 출력
+      console.warn(
+        "⚠️ 401 에러 발생: 인증이 필요합니다. 수동으로 로그인을 확인해주세요."
+      );
 
-      // Redirect to login page
-      window.location.href = "/member/login";
+      // 자동 localStorage 클리어도 제거 (필요시 수동으로)
+      // localStorage.removeItem("accessToken");
+      // localStorage.removeItem("refreshToken");
+
+      // 자동 리다이렉트 제거
+      // window.location.href = "/member/login";
     }
 
     return Promise.reject(error);

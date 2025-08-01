@@ -129,14 +129,6 @@ function MainBoard() {
     <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
       <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
 
-      {/* 로딩 상태 */}
-      {loading && (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-          <span className="ml-2 text-gray-600">게시글을 불러오는 중...</span>
-        </div>
-      )}
-
       {/* 에러 상태 */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">

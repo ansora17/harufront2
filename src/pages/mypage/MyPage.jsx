@@ -1,27 +1,13 @@
-// import React from "react";
-// import { Link, Outlet, Route, Routes } from "react-router-dom";
-// import ProfileSearch from "./ProfileSearch";
-// import EditProfile from "./EditProfile";
-// import WithDrawMembership from "./WithdrawMembership";
-// import ChatBot from "../../components/chatbot/ChatBot";
-
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import InfoList from "../../components/mypage/InfoList";
 import ProfileImage from "../../components/mypage/ProfileImage";
 import SubLayout from "../../layout/SubLayout";
-// import { fetchCurrentMember } from "../../api/authIssueUserApi/memberApi"; // 🔥 제거
-//import useLogout from "../../utils/memberJwtUtil/useLogout";
 import calculateCalories from "../../components/mypage/calculateCalories";
-// 🔥 이 import들 제거
-// import {
-//   editProfile,
-//   updatePhoto as updatePhotoRedux,
-// } from "../../slices/loginSlice";
-//import { uploadProfileImageWithCleanup } from "../../utils/imageUpload/uploadImageToSupabase";
-import { updatePhoto } from "../../api/authIssueUserApi/memberApi";
-
+import { updateProfileImage } from "../../api/memberApi";
+import { updatePhoto } from "../../slices/loginSlice";
+import { getCookie } from "../../utils/cookieUtils";
 export default function MyPage() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.login); // 🔥 수정: .user 제거
@@ -33,6 +19,31 @@ export default function MyPage() {
   // Debug: Log current user data
   console.log("MyPage - Current user data:", currentUser);
   console.log("MyPage - Photo URL:", currentUser?.photo);
+  console.log("MyPage - Profile Image URL:", currentUser?.profileImageUrl);
+
+  // 🔍 실시간 쿠키 상태 확인
+  const currentCookie = getCookie("member");
+  console.log("🍪 현재 쿠키 상태:", currentCookie);
+  console.log("🍪 쿠키의 photo:", currentCookie?.photo);
+  console.log("🍪 쿠키의 profileImageUrl:", currentCookie?.profileImageUrl);
+
+  // 🧪 테스트 헬퍼 함수 (개발 환경에서만)
+  if (process.env.NODE_ENV === "development") {
+    window.debugProfileImage = () => {
+      console.log("🔍 === 프로필 이미지 디버그 정보 ===");
+      console.log("Redux 상태:", currentUser);
+      console.log("쿠키 상태:", getCookie("member"));
+      console.log("현재 이미지 URLs:", {
+        reduxPhoto: currentUser?.photo,
+        reduxProfileImageUrl: currentUser?.profileImageUrl,
+        cookiePhoto: getCookie("member")?.photo,
+        cookieProfileImageUrl: getCookie("member")?.profileImageUrl,
+      });
+      console.log("================================");
+    };
+
+    // 🧪 이미지 URL 접근성 테스트
+  }
 
   // Calculate recommended calories
   const recommendedCalories =
@@ -57,12 +68,24 @@ export default function MyPage() {
       setIsLoading(true);
 
       if (imageUrl) {
+        // 🔥 사용자 ID 추출
+        const userId =
+          currentUser.id || currentUser.memberId || currentUser.userId;
+
         // 🔥 백엔드 API 호출하여 프로필 이미지 URL 업데이트
-        await updatePhoto(imageUrl);
+        await updateProfileImage(userId, imageUrl);
 
-        // 🔥 Redux 상태 업데이트 (만약 loginSlice에 updatePhoto 액션이 있다면)
-        // dispatch(updatePhoto(imageUrl));
+        // 🔥 Redux 상태 즉시 업데이트 (화면에 바로 반영)
+        console.log("🔄 Redux 업데이트 전 상태:", currentUser.profileImageUrl);
+        dispatch(updatePhoto(imageUrl));
+        console.log("🔄 Redux 상태 업데이트 시도:", imageUrl);
 
+        // 🔥 상태 업데이트 후 잠시 기다린 후 확인
+        setTimeout(() => {
+          const updatedCookie = getCookie("member");
+        }, 500);
+
+        alert("프로필 이미지가 업데이트되었습니다!");
         console.log("✅ 프로필 이미지 업데이트 완료:", imageUrl);
       }
     } catch (error) {
@@ -82,27 +105,16 @@ export default function MyPage() {
   if (!currentUser) return null;
 
   return (
-    // <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-    //   <nav className="flex flex-col sm:flex-row justify-around sm:justify-start gap-4 sm:gap-10 mb-6  pb-4  font-semibold text-lg">
-    //     <Link to="profile" className="hover:text-blue-600"></Link>
-    //     <Link to="edit" className="hover:text-blue-600"></Link>
-    //     <Link to="withdraw" className="hover:text-red-600"></Link>
-    //   </nav> *
-    //   <div className="bg-white p-6 sm:p-10 shadow-md rounded-xl">
-    //     <Outlet />
-    //     {/* 챗봇 */}
-    //     <ChatBot />
-
     <div className="w-full max-w-[1020px] mx-auto px-4">
       <SubLayout to="/" menu="마이페이지" label="내 정보" />
 
       <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
         <div className="space-y-8">
           {/* Profile Section */}
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center space-y-1">
             <ProfileImage
-              photo={currentUser.photo}
-              currentImage={currentUser.photo}
+              photo={currentUser.profileImageUrl || currentUser.photo}
+              currentImage={currentUser.profileImageUrl || currentUser.photo}
               nickname={currentUser.nickname}
               onImageChange={handleImageChange}
               size="large"
@@ -113,7 +125,6 @@ export default function MyPage() {
 
           {/* User Info Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">기본 정보</h3>
             <InfoList
               items={[
                 { label: "이름", value: currentUser.name },
@@ -140,12 +151,6 @@ export default function MyPage() {
                     recommendedCalories ||
                     "계산 불가"
                   } kcal`,
-                },
-                {
-                  label: "추천 칼로리",
-                  value: recommendedCalories
-                    ? `${recommendedCalories} kcal`
-                    : "계산 불가",
                 },
               ]}
             />

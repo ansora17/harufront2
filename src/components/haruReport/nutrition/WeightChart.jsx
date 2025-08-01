@@ -216,10 +216,6 @@ const WeightChart = ({ period }) => {
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2 text-right">
-            <div className="text-sm text-gray-500">목표 체중</div>
-            <div className="font-semibold text-blue-600">{targetWeight}kg</div>
-          </div>
         </div>
 
         {weightTrend && (
