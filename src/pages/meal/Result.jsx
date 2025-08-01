@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from "react";
 import SubLayout from "../../layout/SubLayout";
 import { useLocation, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 
 function Result() {
@@ -12,6 +13,10 @@ function Result() {
   const { id } = useParams(); // URL 파라미터에서 meal ID 가져오기
   const passedRecord = location.state;
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
+
+  // 🔥 현재 사용자 정보 가져오기
+  const currentUser = useSelector((state) => state.login);
+  console.log("Current user data:", currentUser);
 
   // 음식 제거 함수
   const handleRemoveImage = (index) => {
@@ -60,6 +65,12 @@ function Result() {
         } else {
           setError("식사 기록을 불러오는데 실패했습니다.");
           return;
+        }
+
+        // 🔥 사용자 weight 정보 추가
+        if (currentUser && currentUser.weight) {
+          mealData.userWeight = currentUser.weight;
+          console.log("사용자 체중 정보 추가:", currentUser.weight);
         }
 
         // 배열인 경우 전체 배열을 foods로 설정
@@ -485,6 +496,37 @@ function Result() {
               </div>
             </div>
           )}
+
+        {/* 🔥 사용자 체중 정보 표시 */}
+        {mealRecord.userWeight && (
+          <>
+            <div className="rounded-xl pt-7 pr-7 pb-3 ps-0 hidden">
+              <div className="flex justify-between font-bold text-2xl ">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  사용자 정보
+                </h2>
+              </div>
+            </div>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg hidden">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600">현재 체중:</span>
+                  <span className="font-bold text-purple-500">
+                    {mealRecord.userWeight} kg
+                  </span>
+                </div>
+                {currentUser && currentUser.height && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">키:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.height} cm
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* 🔥 메모 입력 필드 추가 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">

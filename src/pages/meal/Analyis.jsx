@@ -39,6 +39,10 @@ function Analyis() {
   // 로그인 정보
   const { isLoggedIn, memberId } = useSelector((state) => state.login);
 
+  // 🔥 현재 사용자 정보 가져오기
+  const currentUser = useSelector((state) => state.login);
+  console.log("Current user data:", currentUser);
+
   useEffect(() => {
     setTimestamp(new Date());
   }, []);
@@ -509,6 +513,9 @@ function Analyis() {
       totalCarbs: parseInt(totalNutrition.carbs) || 0,
       totalProtein: parseInt(totalNutrition.protein) || 0,
       totalFat: parseInt(totalNutrition.fat) || 0,
+      // 🔥 사용자 체중 정보 추가
+      recordWeight:
+        currentUser && currentUser.weight ? currentUser.weight : null,
     };
 
     console.log("✅ 식사 저장 데이터:", mealData);
@@ -880,6 +887,39 @@ function Analyis() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 🔥 사용자 정보 표시 */}
+        {currentUser && (currentUser.weight || currentUser.height) && (
+          <>
+            <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
+              <div className="flex justify-between font-bold text-2xl ">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  사용자 정보
+                </h2>
+              </div>
+            </div>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-4">
+                {currentUser.weight && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">현재 체중:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.weight} kg
+                    </span>
+                  </div>
+                )}
+                {currentUser.height && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">키:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.height} cm
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
         {/* 🔥 메모 입력 필드 추가 */}
