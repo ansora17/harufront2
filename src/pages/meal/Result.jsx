@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from "react";
 import SubLayout from "../../layout/SubLayout";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 
 function Result() {
@@ -12,6 +13,11 @@ function Result() {
   const { id } = useParams(); // URL 파라미터에서 meal ID 가져오기
   const passedRecord = location.state;
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
+  const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
+
+  // 🔥 현재 사용자 정보 가져오기
+  const currentUser = useSelector((state) => state.login);
+  console.log("Current user data:", currentUser);
 
   // 음식 제거 함수
   const handleRemoveImage = (index) => {
@@ -62,6 +68,12 @@ function Result() {
           return;
         }
 
+        // 🔥 사용자 weight 정보 추가
+        if (currentUser && currentUser.weight) {
+          mealData.userWeight = currentUser.weight;
+          console.log("사용자 체중 정보 추가:", currentUser.weight);
+        }
+
         // 배열인 경우 전체 배열을 foods로 설정
         let finalMealData = mealData;
         if (Array.isArray(mealData) && mealData.length > 0) {
@@ -89,6 +101,10 @@ function Result() {
             totalFat: mealData.reduce((sum, food) => sum + (food.fat || 0), 0),
             totalSodium: mealData.reduce(
               (sum, food) => sum + (food.sodium || 0),
+              0
+            ),
+            totalQuantity: mealData.reduce(
+              (sum, food) => sum + (food.quantity || 0),
               0
             ),
             modifiedAt: new Date().toISOString(),
@@ -272,17 +288,13 @@ function Result() {
                     : mealRecord.totalFat || mealRecord.fat || 0,
                 ],
                 [
-                  "나트륨",
+                  "수량",
                   mealRecord.foods && Array.isArray(mealRecord.foods)
-                    ? Math.round(
-                        mealRecord.foods.reduce(
-                          (sum, food) => sum + (food.sodium || 0),
-                          0
-                        ) * 10
-                      ) / 10
-                    : Math.round(
-                        (mealRecord.totalSodium || mealRecord.sodium || 0) * 10
-                      ) / 10,
+                    ? mealRecord.foods.reduce(
+                        (sum, food) => sum + (food.quantity || 0),
+                        0
+                      )
+                    : mealRecord.totalQuantity || 0,
                 ],
               ].map(([label, value], i) => (
                 <div key={i} className="flex flex-col items-center gap-2">
@@ -425,7 +437,7 @@ function Result() {
                     −
                   </button>
                   <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                    1
+                    {mealRecord.foods[selectedFoodIndex].quantity || 1}
                   </div>
                   <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
                     ＋
@@ -486,6 +498,37 @@ function Result() {
             </div>
           )}
 
+        {/* 🔥 사용자 체중 정보 표시 */}
+        {mealRecord.userWeight && (
+          <>
+            <div className="rounded-xl pt-7 pr-7 pb-3 ps-0 hidden">
+              <div className="flex justify-between font-bold text-2xl ">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  사용자 정보
+                </h2>
+              </div>
+            </div>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg hidden">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600">현재 체중:</span>
+                  <span className="font-bold text-purple-500">
+                    {mealRecord.userWeight} kg
+                  </span>
+                </div>
+                {currentUser && currentUser.height && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">키:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.height} cm
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         {/* 🔥 메모 입력 필드 추가 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
           <div className="flex justify-between font-bold text-2xl ">
@@ -507,7 +550,49 @@ function Result() {
           <button className="btn bg-purple-500 text-white w-full rounded-lg py-6 text-base mb-2">
             기록하기
           </button>
-          <button className="btn bg-red text-white w-full rounded-lg py-6 text-base">
+          <button
+            className="btn bg-red text-white w-full rounded-lg py-6 text-base"
+            onClick={async () => {
+              try {
+                // 🔥 mealId를 URL 파라미터나 passedRecord에서 가져오기
+                const mealId = id || passedRecord?.id || mealRecord?.id;
+
+                console.log("삭제할 mealId:", mealId);
+                console.log("mealRecord:", mealRecord);
+
+                if (!mealId) {
+                  alert("삭제할 식사 기록 ID를 찾을 수 없습니다.");
+                  return;
+                }
+
+                const response = await axios.delete(
+                  `http://localhost:8080/api/meals/${mealId}`
+                );
+
+                console.log("삭제 응답:", response);
+
+                if (response.status === 204) {
+                  alert("기록이 삭제되었습니다.");
+                  // 🔥 삭제 성공 시 dashboard 페이지로 이동
+                  navigate("/dashboard");
+                } else {
+                  alert("기록 삭제에 실패했습니다.");
+                }
+              } catch (error) {
+                console.error("삭제 오류:", error);
+                console.error("오류 응답:", error.response?.data);
+                console.error("오류 상태:", error.response?.status);
+
+                if (error.response?.status === 404) {
+                  alert("삭제할 식사 기록을 찾을 수 없습니다.");
+                } else if (error.response?.status === 500) {
+                  alert("서버 오류가 발생했습니다.");
+                } else {
+                  alert("기록 삭제 중 오류가 발생했습니다.");
+                }
+              }
+            }}
+          >
             삭제하기
           </button>
         </div>

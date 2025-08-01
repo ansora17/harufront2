@@ -122,12 +122,57 @@ function Meal() {
           </div>
         </div>
 
-        {/* {isLoading && (
-          <div className="text-center py-8">
-            <span className="loading loading-spinner loading-lg text-purple-500"></span>
-            <p className="text-purple-600 mt-2">식사 데이터를 불러오는 중...</p>
-          </div>
-        )} */}
+        {/* 로딩 상태 - 스켈레톤 UI */}
+        {isLoading && (
+          <>
+            {/* 영양소 요약 스켈레톤 */}
+            <div className="card bg-base-100 shadow-lg p-4 px-0 sm:px-40">
+              <div className="text-md mb-4">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-2 animate-pulse"></div>
+              <div className="flex gap-10 justify-between">
+                {[1, 2, 3].map((i) => (
+                  <div key={i}>
+                    <div className="text-md mb-4 pr-10 sm:pr-24">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                    </div>
+                    <div className="bg-gray-200 rounded-full h-4 mb-2 animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 식사 기록 스켈레톤 */}
+            <div className="h-6 bg-gray-200 rounded animate-pulse w-24 mb-4"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="card justify-between bg-base-100 w-full rounded-xl shadow-lg p-[20px]"
+                >
+                  <figure className="mt-4">
+                    <div className="rounded-xl h-[180px] w-full bg-gray-200 animate-pulse"></div>
+                  </figure>
+                  <div className="card-body p-0">
+                    <div className="card-title flex mt-2">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-16"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                    </div>
+                    <div className="text-[16px] font-semibold flex gap-4">
+                      {[1, 2, 3].map((j) => (
+                        <div
+                          key={j}
+                          className="h-4 bg-gray-200 rounded animate-pulse w-12"
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
         {/* 에러 상태 */}
         {error && (
           <div className="alert alert-error">

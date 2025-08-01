@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import SubLayout from "../../layout/SubLayout";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   setSelectedDate,
   fetchDailyMealRecordsThunk,
@@ -38,6 +39,11 @@ function Analyis() {
 
   // 로그인 정보
   const { isLoggedIn, memberId } = useSelector((state) => state.login);
+
+  // 🔥 현재 사용자 정보 가져오기
+  const currentUser = useSelector((state) => state.login);
+  const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
+  console.log("Current user data:", currentUser);
 
   useEffect(() => {
     setTimestamp(new Date());
@@ -184,6 +190,7 @@ function Analyis() {
           sodium: result.sodium || 0,
           fiber: result.fiber || 0,
           gram: result.totalAmount || "알 수 없음",
+          quantity: result.quantity || 1,
           foodCategory: result.foodCategory || "알 수 없음",
         };
 
@@ -306,6 +313,7 @@ function Analyis() {
               sodium: food.sodium || 0,
               fiber: food.fiber || 0,
               gram: food.totalAmount || "알 수 없음",
+              quantity: food.quantity || 1, // 🔥 quantity 추가
               foodCategory: food.foodCategory || "알 수 없음",
             };
             console.log(`🔍 음식 ${index + 1} 변환된 데이터:`, foodData);
@@ -323,6 +331,7 @@ function Analyis() {
             sodium: result.sodium || 0,
             fiber: result.fiber || 0,
             gram: result.totalAmount || "알 수 없음",
+            quantity: result.quantity || 1, // 🔥 quantity 추가
             foodCategory: result.foodCategory || "알 수 없음",
           };
           console.log("🔍 단일 음식 변환된 데이터:", foodData);
@@ -491,10 +500,12 @@ function Analyis() {
         fat: food.fat || 0,
         sodium: food.sodium || 0,
         fiber: food.fiber || 0,
-        gram: food.gram || "알 수 없음",
+        totalAmount: food.gram || 0, // 🔥 gram을 totalAmount로 매핑
+        quantity: food.quantity || 1, // 🔥 실제 데이터에서 quantity 가져오기, 없으면 1
         foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
+      console.log("🔍 저장할 음식 데이터:", foodData); // 🔥 디버깅 로그 추가
       return foodData;
     });
 
@@ -509,6 +520,9 @@ function Analyis() {
       totalCarbs: parseInt(totalNutrition.carbs) || 0,
       totalProtein: parseInt(totalNutrition.protein) || 0,
       totalFat: parseInt(totalNutrition.fat) || 0,
+      // 🔥 사용자 체중 정보 추가
+      recordWeight:
+        currentUser && currentUser.weight ? currentUser.weight : null,
     };
 
     console.log("✅ 식사 저장 데이터:", mealData);
@@ -524,6 +538,7 @@ function Analyis() {
 
       console.log("✅ 식사 저장 성공:", result);
       alert("식사 기록이 저장되었습니다.");
+      navigate("/dashboard");
 
       // 🔥 폼 초기화
       setImages([]);
@@ -828,7 +843,7 @@ function Analyis() {
                   −
                 </button>
                 <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                  1
+                  {resultData[selectedFoodIndex].quantity || 1}
                 </div>
                 <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
                   ＋
@@ -880,6 +895,39 @@ function Analyis() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 🔥 사용자 정보 표시 */}
+        {currentUser && (currentUser.weight || currentUser.height) && (
+          <>
+            <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
+              <div className="flex justify-between font-bold text-2xl ">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  사용자 정보
+                </h2>
+              </div>
+            </div>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-4">
+                {currentUser.weight && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">현재 체중:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.weight} kg
+                    </span>
+                  </div>
+                )}
+                {currentUser.height && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">키:</span>
+                    <span className="font-bold text-purple-500">
+                      {currentUser.height} cm
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
         {/* 🔥 메모 입력 필드 추가 */}
