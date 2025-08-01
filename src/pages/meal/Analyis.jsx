@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import SubLayout from "../../layout/SubLayout";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   setSelectedDate,
   fetchDailyMealRecordsThunk,
@@ -41,6 +42,7 @@ function Analyis() {
 
   // 🔥 현재 사용자 정보 가져오기
   const currentUser = useSelector((state) => state.login);
+  const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
   console.log("Current user data:", currentUser);
 
   useEffect(() => {
@@ -311,7 +313,7 @@ function Analyis() {
               sodium: food.sodium || 0,
               fiber: food.fiber || 0,
               gram: food.totalAmount || "알 수 없음",
-              quantity: food.quantity || 1,
+              quantity: food.quantity || 1, // 🔥 quantity 추가
               foodCategory: food.foodCategory || "알 수 없음",
             };
             console.log(`🔍 음식 ${index + 1} 변환된 데이터:`, foodData);
@@ -329,6 +331,7 @@ function Analyis() {
             sodium: result.sodium || 0,
             fiber: result.fiber || 0,
             gram: result.totalAmount || "알 수 없음",
+            quantity: result.quantity || 1, // 🔥 quantity 추가
             foodCategory: result.foodCategory || "알 수 없음",
           };
           console.log("🔍 단일 음식 변환된 데이터:", foodData);
@@ -502,6 +505,7 @@ function Analyis() {
         foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
+      console.log("🔍 저장할 음식 데이터:", foodData); // 🔥 디버깅 로그 추가
       return foodData;
     });
 

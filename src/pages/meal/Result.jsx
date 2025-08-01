@@ -103,6 +103,10 @@ function Result() {
               (sum, food) => sum + (food.sodium || 0),
               0
             ),
+            totalQuantity: mealData.reduce(
+              (sum, food) => sum + (food.quantity || 0),
+              0
+            ),
             modifiedAt: new Date().toISOString(),
             mealType: "LUNCH", // 기본값
           };
@@ -284,17 +288,13 @@ function Result() {
                     : mealRecord.totalFat || mealRecord.fat || 0,
                 ],
                 [
-                  "나트륨",
+                  "수량",
                   mealRecord.foods && Array.isArray(mealRecord.foods)
-                    ? Math.round(
-                        mealRecord.foods.reduce(
-                          (sum, food) => sum + (food.sodium || 0),
-                          0
-                        ) * 10
-                      ) / 10
-                    : Math.round(
-                        (mealRecord.totalSodium || mealRecord.sodium || 0) * 10
-                      ) / 10,
+                    ? mealRecord.foods.reduce(
+                        (sum, food) => sum + (food.quantity || 0),
+                        0
+                      )
+                    : mealRecord.totalQuantity || 0,
                 ],
               ].map(([label, value], i) => (
                 <div key={i} className="flex flex-col items-center gap-2">
@@ -437,7 +437,7 @@ function Result() {
                     −
                   </button>
                   <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                    1
+                    {mealRecord.foods[selectedFoodIndex].quantity || 1}
                   </div>
                   <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
                     ＋
