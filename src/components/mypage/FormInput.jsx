@@ -7,6 +7,9 @@ export default function FormInput({
   placeholder,
   value,
   onChange,
+  className,
+  disabled,
+  ...rest
 }) {
   return (
     <input
@@ -16,7 +19,12 @@ export default function FormInput({
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      disabled={disabled}
+      className={
+        className ||
+        "w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      }
+      {...rest}
     />
   );
 }
