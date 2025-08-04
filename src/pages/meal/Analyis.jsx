@@ -17,6 +17,8 @@ import DatePickerModal from "../../components/meal/DatePickerModal";
 
 function Analyis() {
   const fileInputRef = useRef(null);
+  const fileAlbumInputRef = useRef(null);
+  const [showImageSourceModal, setShowImageSourceModal] = useState(false);
   const [timestamp, setTimestamp] = useState(null);
   const selectedMeal = useSelector((state) => state.meal.selectedMeal);
   const [resultData, setResultData] = useState([]);
@@ -682,9 +684,21 @@ function Analyis() {
 
         <div className="border-b border-gray-300">
           {/* 이미지 업로드 */}
+          {/* 이미지 업로드 (모바일: 카메라/앨범 선택 모달) */}
           <div
             className="relative bg-gray-200 h-60 sm:h-64 md:h-92 rounded-xl flex items-center justify-center mb-6 cursor-pointer"
-            onClick={handleImageClick}
+            onClick={() => {
+              // 모바일 환경 감지
+              const isMobile =
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                  navigator.userAgent
+                );
+              if (isMobile) {
+                setShowImageSourceModal(true);
+              } else {
+                handleImageClick();
+              }
+            }}
           >
             {images.length > 0 ? (
               <>
@@ -718,6 +732,7 @@ function Analyis() {
               <span className="text-4xl text-gray-400">＋</span>
             )}
 
+            {/* 실제 파일 input 2개 (카메라/앨범용) */}
             <input
               type="file"
               ref={fileInputRef}
@@ -725,8 +740,57 @@ function Analyis() {
               capture="environment"
               onChange={handleImageChange}
               className="hidden"
-              multiple // ✅ 이거 추가
+              multiple
             />
+            <input
+              type="file"
+              ref={fileAlbumInputRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              multiple
+            />
+
+            {/* 카메라/앨범 선택 모달 */}
+            {showImageSourceModal && (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+                onClick={() => setShowImageSourceModal(false)}
+              >
+                <div
+                  className="bg-white w-full max-w-xs rounded-t-2xl p-6 pb-4 flex flex-col gap-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="w-full py-3 rounded-xl bg-purple-500 text-white font-bold text-lg mb-2"
+                    onClick={() => {
+                      setShowImageSourceModal(false);
+                      // 카메라 input 클릭
+                      fileInputRef.current && fileInputRef.current.click();
+                    }}
+                  >
+                    카메라로 촬영
+                  </button>
+                  <button
+                    className="w-full py-3 rounded-xl bg-gray-200 text-gray-800 font-bold text-lg"
+                    onClick={() => {
+                      setShowImageSourceModal(false);
+                      // 앨범 input 클릭
+                      fileAlbumInputRef.current &&
+                        fileAlbumInputRef.current.click();
+                    }}
+                  >
+                    앨범에서 선택
+                  </button>
+                  <button
+                    className="w-full py-2 text-gray-500 mt-2"
+                    onClick={() => setShowImageSourceModal(false)}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 총 섭취량 */}
