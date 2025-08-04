@@ -15,6 +15,8 @@ function Result() {
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
   const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
 
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api";
+
   // 🔥 현재 사용자 정보 가져오기
   const currentUser = useSelector((state) => state.login);
   console.log("Current user data:", currentUser);
@@ -50,9 +52,7 @@ function Result() {
         }
 
         // API 호출
-        const response = await axios.get(
-          `http://localhost:8080/api/meals/${mealId}`
-        );
+        const response = await axios.get(`${API_BASE_URL}/meals/${mealId}`);
 
         console.log("API 응답:", response.data);
 
@@ -231,8 +231,14 @@ function Result() {
                 src={mealRecord.imageUrl}
                 alt="기록된 음식"
                 className="object-cover w-full h-full rounded-xl"
+                onError={(e) => {
+                  console.error("이미지 로드 실패:", mealRecord.imageUrl);
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
+                }}
               />
-            ) : (
+            ) : null}
+            {!mealRecord.imageUrl && (
               <div className="text-gray-400 text-4xl">🍽️</div>
             )}
           </div>
