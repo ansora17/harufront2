@@ -24,7 +24,10 @@ const DatePickerModal = ({
         setRecordedDates(res.data);
       })
       .catch(() => setRecordedDates([]));
-    setSelectedDate(initialDate || "");
+
+    // 🔥 초기 날짜 설정: initialDate가 있으면 사용, 없으면 현재 날짜 사용
+    const today = format(new Date(), "yyyy-MM-dd");
+    setSelectedDate(initialDate || today);
   }, [open, memberId, initialDate]);
 
   const tileClassName = ({ date, view }) => {
@@ -72,7 +75,8 @@ const DatePickerModal = ({
           </div>
           <Calendar
             onClickDay={(value) => setSelectedDate(format(value, "yyyy-MM-dd"))}
-            value={selectedDate ? new Date(selectedDate) : undefined}
+            value={selectedDate ? new Date(selectedDate) : new Date()}
+            defaultValue={new Date()}
             tileContent={tileContent}
             tileClassName={tileClassName}
             className=" shadow-none w-full"
