@@ -20,8 +20,10 @@ export default function EditProfile() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const currentUser = useSelector((state) => state.login.user);
+  const loginState = useSelector((state) => state.login);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log("🔐 컴포넌트 레벨 Redux 상태:", loginState);
 
   const [form, setForm] = useState({
     name: "",
@@ -125,11 +127,45 @@ export default function EditProfile() {
 
     try {
       setIsLoading(true);
-      const response = await updateProfile(form);
+
+      // 쿠키에서 memberId 가져오기
+      const memberData = getCookie("member");
+      console.log("🍪 쿠키 데이터:", memberData);
+
+      // memberId 확인 (쿠키 또는 Redux에서)
+      const memberId = memberData?.memberId || loginState?.id;
+      console.log("👤 사용할 memberId:", memberId);
+
+      if (!memberId) {
+        throw new Error("사용자 정보를 찾을 수 없습니다.");
+      }
+
+      // 데이터 정리 및 변환
+      const formData = {
+        id: memberId, // 쿠키나 Redux에서 가져온 memberId 사용
+        name: form.name,
+        birthAt: form.birthAt,
+        gender: form.gender,
+        height: form.height ? parseFloat(form.height) : null,
+        weight: form.weight ? parseFloat(form.weight) : null,
+        activityLevel: form.activityLevel,
+      };
+
+      // 빈 문자열이나 undefined 값 제거
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] === "" || formData[key] === undefined) {
+          delete formData[key];
+        }
+      });
+
+      console.log("Submitting profile data:", formData);
+
+      const response = await updateProfile(formData);
       dispatch(editProfile(response));
       alert("프로필이 수정되었습니다.");
       navigate("/mypage");
     } catch (error) {
+      console.error("Profile update error details:", error.response?.data);
       const message =
         error.response?.data?.message || "프로필 수정에 실패했습니다.";
       alert(message);
@@ -139,9 +175,11 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="w-full max-w-[1020px] mx-auto px-4">
+      <SubLayout to="/mypage" menu="마이페이지" label="프로필 수정" />
+
       {/* 안내 섹션 */}
-      <div className="bg-purple-50 rounded-lg p-4 sm:p-6 border border-purple-100 mb-6">
+      <div className="mt-8 bg-purple-50 rounded-lg p-4 sm:p-6 border border-purple-100 mb-6">
         <div className="flex items-center gap-3 mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -281,11 +319,14 @@ export default function EditProfile() {
       </div>
 
       {/* 입력 폼 */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-lg shadow-sm p-6 space-y-6"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-2">
-              이름
+              닉네임
             </label>
             <FormInput
               name="name"
@@ -329,7 +370,7 @@ export default function EditProfile() {
               onChange={handleChange}
               options={[
                 { value: "LOW", label: "조금 활동적" },
-                { value: "MEDIUM", label: "활동적" },
+                { value: "MODERATE", label: "활동적" },
                 { value: "HIGH", label: "매우 활동적" },
               ]}
             />
@@ -366,19 +407,13 @@ export default function EditProfile() {
           >
             저장하기
           </button>
+
           <button
             type="button"
-            onClick={() => navigate("/mypage/profile")}
+            onClick={() => navigate("/mypage")}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200"
           >
             취소
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200"
-          >
-            메인으로
           </button>
         </div>
       </form>

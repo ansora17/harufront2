@@ -143,13 +143,17 @@ export default function Signup() {
       setIsLoading(true);
       const { passwordConfirm, ...signupData } = form;
 
-      // Send signup request (with profile image)
-      const response = await signupMember(signupData, profileImage);
+      // Send signup request (with profile image included in data)
+      const finalSignupData = {
+        ...signupData,
+        profileImageUrl: profileImage || null,
+      };
+
+      const response = await signupMember(finalSignupData);
 
       //check for API testing
       console.log("Final signup POST request sent");
-      console.log("signupData:", signupData);
-      console.log("profileImage:", profileImage);
+      console.log("finalSignupData:", finalSignupData);
       console.log("response:", response);
       console.log("response.data:", response.data);
 

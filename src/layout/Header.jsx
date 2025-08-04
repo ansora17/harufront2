@@ -25,7 +25,7 @@ function Header() {
             <img
               src="/images/main_icon.png"
               alt="main icon"
-              className="w-full max-w-[90%] h-auto md:max-w-[600px] sm:max-w-[90%] object-contain"
+              className="w-[150px] sm:w-[200px] md:w-[250px] h-auto object-contain"
             />
           </Link>
         </h1>
@@ -43,7 +43,10 @@ function Header() {
                   to="/mypage"
                   className="font-semibold text-purple-500 hover:underline"
                 >
-                  {nickname} 님 , 반갑습니다!
+                  <span className="hidden sm:inline">
+                    {nickname} 님 , 반갑습니다!
+                  </span>
+                  <span className="sm:hidden">{nickname} 님</span>
                 </Link>
               </li>
               <li></li>

@@ -14,7 +14,7 @@ export const loginPost = async (loginParam) => {
   formData.append("password", loginParam.password);
 
   const response = await axios.post(
-    API_BASE + "/api/members/login",
+    `${API_BASE}/api/members/login`,
     formData,
     header
   );

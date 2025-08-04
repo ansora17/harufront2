@@ -16,34 +16,8 @@ export default function MyPage() {
   const [previewImage, setPreviewImage] = useState(null);
   // const logout = useLogout(); // 🔥 제거
 
-  // Debug: Log current user data
-  console.log("MyPage - Current user data:", currentUser);
-  console.log("MyPage - Photo URL:", currentUser?.photo);
-  console.log("MyPage - Profile Image URL:", currentUser?.profileImageUrl);
-
   // 🔍 실시간 쿠키 상태 확인
   const currentCookie = getCookie("member");
-  console.log("🍪 현재 쿠키 상태:", currentCookie);
-  console.log("🍪 쿠키의 photo:", currentCookie?.photo);
-  console.log("🍪 쿠키의 profileImageUrl:", currentCookie?.profileImageUrl);
-
-  // 🧪 테스트 헬퍼 함수 (개발 환경에서만)
-  if (process.env.NODE_ENV === "development") {
-    window.debugProfileImage = () => {
-      console.log("🔍 === 프로필 이미지 디버그 정보 ===");
-      console.log("Redux 상태:", currentUser);
-      console.log("쿠키 상태:", getCookie("member"));
-      console.log("현재 이미지 URLs:", {
-        reduxPhoto: currentUser?.photo,
-        reduxProfileImageUrl: currentUser?.profileImageUrl,
-        cookiePhoto: getCookie("member")?.photo,
-        cookieProfileImageUrl: getCookie("member")?.profileImageUrl,
-      });
-      console.log("================================");
-    };
-
-    // 🧪 이미지 URL 접근성 테스트
-  }
 
   // Calculate recommended calories
   const recommendedCalories =

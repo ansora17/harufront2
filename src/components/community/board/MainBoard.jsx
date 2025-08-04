@@ -115,18 +115,30 @@ function MainBoard() {
     }
   };
 
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString) => {
+  // 반응형 날짜 포맷팅 함수
+  const formatDate = (dateString, isShort = false) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date
-      .toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      })
-      .replace(/\./g, ". ")
-      .trim();
+
+    if (isShort) {
+      // 모바일용 짧은 형식: "07. 30"
+      return date
+        .toLocaleDateString("ko-KR", {
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\s/g, ""); // 공백만 제거하고 점은 유지
+    } else {
+      // 데스크톱용 긴 형식: "2024. 08. 01"
+      return date
+        .toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\./g, ". ")
+        .trim();
+    }
   };
 
   useEffect(() => {
@@ -215,9 +227,17 @@ function MainBoard() {
                     <th className="hidden sm:table-cell py-4 px-6 text-left w-[10%]">
                       번호
                     </th>
-                    <th className="py-4 px-6 text-left w-[50%]">제목</th>
-                    <th className="py-4 px-6 text-left w-[20%]">작성자</th>
-                    <th className="py-4 px-6 text-left w-[20%]">작성일</th>
+                    <th className="py-4 px-3 sm:px-6 text-left w-[45%] sm:w-[50%]">
+                      제목
+                    </th>
+                    <th className="py-4 px-3 sm:px-6 text-left w-[25%] sm:w-[20%]">
+                      작성자
+                    </th>
+                    <th className="py-4 px-3 sm:px-6 text-left w-[30%] sm:w-[20%]">
+                      {/* 데스크톱: "작성일", 모바일: "날짜" */}
+                      <span className="hidden sm:inline">작성일</span>
+                      <span className="sm:hidden">날짜</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -229,10 +249,10 @@ function MainBoard() {
                       <td className="hidden sm:table-cell py-4 px-6 text-gray-600">
                         {post.id}
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-3 sm:px-6">
                         <Link
                           to={`/community/board/writeview/${post.id}`}
-                          className="text-gray-900  transition-colors duration-150 line-clamp-1"
+                          className="text-gray-900 transition-colors duration-150 line-clamp-1 hover:text-purple-600"
                           onClick={() =>
                             localStorage.setItem("selectedPostId", post.id)
                           }
@@ -240,13 +260,19 @@ function MainBoard() {
                           {post.title}
                         </Link>
                       </td>
-                      <td className="py-4 px-6 text-gray-600">
+                      <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
                         {post.memberId
                           ? `${getMemberDisplayName(post.memberId)}`
                           : "알 수 없음"}
                       </td>
-                      <td className="py-4 px-6 text-gray-600">
-                        {formatDate(post.createdAt)}
+                      <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
+                        {/* 데스크톱: 전체 날짜, 모바일: 짧은 날짜 */}
+                        <span className="hidden sm:inline">
+                          {formatDate(post.createdAt, false)}
+                        </span>
+                        <span className="sm:hidden">
+                          {formatDate(post.createdAt, true)}
+                        </span>
                       </td>
                     </tr>
                   ))}
