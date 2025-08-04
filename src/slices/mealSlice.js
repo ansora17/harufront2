@@ -7,6 +7,8 @@ import {
 } from "../api/mealApi";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api";
+
 // 🔥 월별 식사 기록 가져오기 thunk 액션
 export const fetchMonthlyMealRecordsThunk = createAsyncThunk(
   "meal/fetchMonthlyMealRecords",
@@ -125,7 +127,7 @@ export const fetchDailyMealRecordsThunk = createAsyncThunk(
       console.log("🔍 일별 데이터 API 호출:", { memberId, date });
 
       const response = await axios.get(
-        `/api/meals/modified-date/member/${memberId}?date=${date}`
+        `${API_BASE_URL}/meals/modified-date/member/${memberId}?date=${date}`
       );
 
       console.log("✅ 일별 데이터 API 응답:", response.data);
@@ -235,7 +237,7 @@ export const saveMealRecordThunk = createAsyncThunk(
   async ({ memberId, mealData }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `/api/meals?memberId=${memberId}`,
+        `${API_BASE_URL}/meals?memberId=${memberId}`,
         mealData,
         {
           headers: {

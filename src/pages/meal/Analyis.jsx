@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import SubLayout from "../../layout/SubLayout";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import supabase from "../../utils/supabases";
 import {
   setSelectedDate,
   fetchDailyMealRecordsThunk,
@@ -436,6 +437,37 @@ function Analyis() {
     };
   };
 
+  // 🔥 이미지를 Supabase에 업로드하는 함수
+  const uploadImageToSupabase = async (file) => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2)}.${fileExt}`;
+      const filePath = `meal-images/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("meal-images")
+        .upload(filePath, file);
+
+      if (error) {
+        console.error("이미지 업로드 실패:", error);
+        throw error;
+      }
+
+      // 업로드된 이미지의 공개 URL 가져오기
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("meal-images").getPublicUrl(filePath);
+
+      console.log("✅ 이미지 업로드 성공:", publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error("이미지 업로드 오류:", error);
+      throw error;
+    }
+  };
+
   const handleSaveMeal = async () => {
     // 로그인 체크
     if (!isLoggedIn || !memberId) {
@@ -511,20 +543,35 @@ function Analyis() {
       return foodData;
     });
 
-          // 🔥 백엔드 API 호출 시 memo 포함
-      const mealData = {
-        mealType: mealTypeMap[selectedMeal] || "정보 없음",
-        imageUrl: "",
-        memo: memo || "", // 🔥 메모 추가
-        foods: foods,
-        modifiedAt: modifiedAtStr,
-        totalCalories: parseInt(totalNutrition.kcal) || 0,
-        totalCarbs: parseInt(totalNutrition.carbs) || 0,
-        totalProtein: parseInt(totalNutrition.protein) || 0,
-        totalFat: parseInt(totalNutrition.fat) || 0,
-        // 🔥 사용자 체중 정보 추가
-        recordWeight: recordWeight ? parseFloat(recordWeight) : null,
-      };
+    // 🔥 이미지 업로드 처리
+    let imageUrl = "";
+    if (images.length > 0 && images[0].file) {
+      try {
+        console.log("📤 이미지를 Supabase에 업로드 중...");
+        imageUrl = await uploadImageToSupabase(images[0].file);
+        console.log("✅ 이미지 업로드 완료:", imageUrl);
+      } catch (error) {
+        console.error("❌ 이미지 업로드 실패:", error);
+        alert(
+          "이미지 업로드에 실패했습니다. 식사 기록은 저장되지만 이미지는 포함되지 않습니다."
+        );
+      }
+    }
+
+    // 🔥 백엔드 API 호출 시 memo 포함
+    const mealData = {
+      mealType: mealTypeMap[selectedMeal] || "정보 없음",
+      imageUrl: imageUrl, // 🔥 Supabase에서 받은 이미지 URL
+      memo: memo || "", // 🔥 메모 추가
+      foods: foods,
+      modifiedAt: modifiedAtStr,
+      totalCalories: parseInt(totalNutrition.kcal) || 0,
+      totalCarbs: parseInt(totalNutrition.carbs) || 0,
+      totalProtein: parseInt(totalNutrition.protein) || 0,
+      totalFat: parseInt(totalNutrition.fat) || 0,
+      // 🔥 사용자 체중 정보 추가
+      recordWeight: recordWeight ? parseFloat(recordWeight) : null,
+    };
 
     console.log("✅ 식사 저장 데이터:", mealData);
 

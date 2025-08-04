@@ -268,7 +268,23 @@ function Meal() {
                           "/images/food_1.jpg"
                         }
                         alt="음식 사진"
+                        onError={(e) => {
+                          console.error("이미지 로드 실패:", record.imageUrl);
+                          e.target.style.display = "none";
+                          // 이미지 로드 실패 시 기본 아이콘 표시
+                          const fallbackDiv = e.target.nextSibling;
+                          if (fallbackDiv) {
+                            fallbackDiv.style.display = "flex";
+                          }
+                        }}
                       />
+                      {/* 이미지 로드 실패 시 표시할 기본 아이콘 */}
+                      <div
+                        className="rounded-xl h-[180px] w-full bg-gray-200 flex items-center justify-center text-4xl text-gray-400"
+                        style={{ display: "none" }}
+                      >
+                        🍽️
+                      </div>
                     </figure>
                     <div className="card-body p-0">
                       <h2 className="card-title flex mt-2">
