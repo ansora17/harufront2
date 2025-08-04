@@ -12,7 +12,7 @@ function WelcomeMain() {
             <img
               src="/images/main_icon.png"
               alt="하루칼로리"
-              className="w-full max-w-[200px] sm:max-w-[300px] h-auto object-contain"
+              className="w-full max-w-[200px] sm:max-w-[300px] h-14 object-contain"
             />
           </div>
           <div className="flex gap-3">
@@ -33,8 +33,8 @@ function WelcomeMain() {
       </header>
 
       {/* 메인 히어로 섹션 */}
-      <section className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+      <section className="max-w-6xl mx-auto px-4 py-14 text-center">
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-9">
           AI로 쉽고 간편한
           <br />
           <span className="text-purple-500">칼로리 식단 기록</span>
@@ -55,8 +55,8 @@ function WelcomeMain() {
       </section>
 
       {/* 앱 스크린샷 섹션 */}
-      <section className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+      <section className="max-w-4xl mx-auto px-4 py-8 mb-10">
+        <div className="bg-white rounded-2xl shadow-xl p-8 ">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="bg-gray-100 rounded-xl h-64 mb-4 flex items-center justify-center">
@@ -104,6 +104,7 @@ function WelcomeMain() {
           </div>
         </div>
       </section>
+      <img src="/images/bg7.jpg" alt="" className="w-full h-130" />
 
       {/* 주요 기능 섹션 */}
       <section id="features" className="max-w-6xl mx-auto px-4 py-16">
@@ -112,8 +113,12 @@ function WelcomeMain() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="text-center p-6 bg-white rounded-lg shadow-md">
-            <div className="w-16 h-16 bg-purple-300 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🤖</span>
+            <div className="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <img
+                src="/images/light2.png"
+                alt="ai"
+                className="w-18 h-16 rounded-full p-1"
+              />
             </div>
             <h3 className="font-bold text-lg mb-2">AI 자동 분석</h3>
             <p className="text-gray-600">
@@ -121,8 +126,12 @@ function WelcomeMain() {
             </p>
           </div>
           <div className="text-center p-6 bg-white rounded-lg shadow-md">
-            <div className="w-16 h-16 bg-purple-300 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📈</span>
+            <div className="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <img
+                src="/images/light2.png"
+                alt="ai"
+                className="w-18 h-16 rounded-full p-1"
+              />
             </div>
             <h3 className="font-bold text-lg mb-2">개인 맞춤 목표</h3>
             <p className="text-gray-600">
@@ -130,8 +139,12 @@ function WelcomeMain() {
             </p>
           </div>
           <div className="text-center p-6 bg-white rounded-lg shadow-md">
-            <div className="w-16 h-16 bg-purple-300 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📊</span>
+            <div className="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <img
+                src="/images/light2.png"
+                alt="ai"
+                className="w-18 h-16 rounded-full p-1"
+              />
             </div>
             <h3 className="font-bold text-lg mb-2">상세한 리포트</h3>
             <p className="text-gray-600">
@@ -139,8 +152,12 @@ function WelcomeMain() {
             </p>
           </div>
           <div className="text-center p-6 bg-white rounded-lg shadow-md">
-            <div className="w-16 h-16 bg-purple-300 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🏆</span>
+            <div className="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <img
+                src="/images/light2.png"
+                alt="ai"
+                className="w-18 h-16 rounded-full p-1"
+              />
             </div>
             <h3 className="font-bold text-lg mb-2">지속 가능한 습관</h3>
             <p className="text-gray-600">
@@ -149,6 +166,7 @@ function WelcomeMain() {
           </div>
         </div>
       </section>
+      <img src="/images/bg6.jpg" alt="" className="w-full h-130" />
 
       {/* CTA 섹션 */}
       <section className="bg-purple-500 text-white py-16">

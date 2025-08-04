@@ -9,45 +9,48 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api";
 
-// 🔥 월별 식사 기록 가져오기 thunk 액션
-export const fetchMonthlyMealRecordsThunk = createAsyncThunk(
-  "meal/fetchMonthlyMealRecords",
-  async ({ memberId, year, month }, { rejectWithValue }) => {
+// 🔥 날짜 범위로 식사 기록 가져오기 thunk 액션
+export const fetchMealRecordsByDateRangeThunk = createAsyncThunk(
+  "meal/fetchMealRecordsByDateRange",
+  async ({ memberId, startDate, endDate }, { rejectWithValue }) => {
     try {
       console.log("🔍 mealSlice - API 호출 시작:", {
         memberId,
-        year,
-        month: month + 1,
+        startDate,
+        endDate,
       });
 
-      // 🔥 먼저 전체 데이터를 가져와서 필터링하는 방식 사용
-      let monthlyData;
+      // 🔥 전체 데이터를 가져와서 날짜 범위로 필터링
+      let filteredData;
       try {
         console.log("🔍 1단계: fetchMealsByMemberId 호출 (전체 데이터)");
         const allData = await fetchMealsByMemberId(memberId);
         console.log("✅ fetchMealsByMemberId 응답:", allData);
 
         if (allData && Array.isArray(allData)) {
-          // 해당 월 데이터만 필터링
-          monthlyData = allData.filter((meal) => {
+          // 시작일과 종료일 사이의 데이터만 필터링
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          start.setHours(0, 0, 0, 0);
+          end.setHours(23, 59, 59, 999);
+
+          filteredData = allData.filter((meal) => {
             const mealDate = new Date(
               meal.modifiedAt || meal.createDate || meal.createdDate
             );
-            return (
-              mealDate.getFullYear() === year && mealDate.getMonth() === month
-            );
+            return mealDate >= start && mealDate <= end;
           });
-          console.log("✅ 필터링된 월별 데이터:", monthlyData);
+          console.log("✅ 필터링된 데이터:", filteredData);
         } else {
-          monthlyData = [];
+          filteredData = [];
         }
       } catch (error) {
         console.log("❌ fetchMealsByMemberId 실패:", error);
-        monthlyData = [];
+        filteredData = [];
       }
 
       // 🔥 데이터 가공 (기존 로직 유지)
-      const processedData = Array.isArray(monthlyData) ? monthlyData : [];
+      const processedData = Array.isArray(filteredData) ? filteredData : [];
 
       const transformedData = processedData.map((record) => {
         // mealType → type 변환
@@ -109,8 +112,8 @@ export const fetchMonthlyMealRecordsThunk = createAsyncThunk(
 
       return {
         data: transformedData,
-        month,
-        year,
+        startDate,
+        endDate,
       };
     } catch (error) {
       console.error("❌ mealSlice - 전체 에러:", error);
@@ -321,26 +324,25 @@ const mealSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // 🔥 fetchMonthlyMealRecordsThunk 처리
-      .addCase(fetchMonthlyMealRecordsThunk.pending, (state) => {
+      .addCase(fetchMealRecordsByDateRangeThunk.pending, (state) => {
         state.isMonthlyLoading = true;
         state.monthlyError = null;
-        console.log("🔄 mealSlice - 월별 데이터 로딩 시작");
+        console.log("🔄 mealSlice - 데이터 로딩 시작");
       })
-      .addCase(fetchMonthlyMealRecordsThunk.fulfilled, (state, action) => {
+      .addCase(fetchMealRecordsByDateRangeThunk.fulfilled, (state, action) => {
         state.isMonthlyLoading = false;
         state.monthlyMealRecords = action.payload.data;
-        state.currentMonth = action.payload.month;
-        state.currentYear = action.payload.year;
+        // 날짜 범위의 첫 번째 날짜로 currentMonth와 currentYear 설정
+        const firstDate = new Date(action.payload.startDate);
+        state.currentMonth = firstDate.getMonth();
+        state.currentYear = firstDate.getFullYear();
         state.monthlyError = null;
-        console.log(
-          "✅ mealSlice - 월별 데이터 로딩 완료:",
-          action.payload.data
-        );
+        console.log("✅ mealSlice - 데이터 로딩 완료:", action.payload.data);
       })
-      .addCase(fetchMonthlyMealRecordsThunk.rejected, (state, action) => {
+      .addCase(fetchMealRecordsByDateRangeThunk.rejected, (state, action) => {
         state.isMonthlyLoading = false;
         state.monthlyError = action.payload;
-        console.error("❌ mealSlice - 월별 데이터 로딩 실패:", action.payload);
+        console.error("❌ mealSlice - 데이터 로딩 실패:", action.payload);
       })
       // 🔥 일별 데이터 thunk 처리 추가
       .addCase(fetchDailyMealRecordsThunk.pending, (state) => {
