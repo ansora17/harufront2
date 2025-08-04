@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-// import { useSelector } from "react-redux"; // 테스트용: Redux 의존성 제거
+import { useSelector } from "react-redux"; // ✅ Redux 활성화
 import PurBtn from "../../common/PurBtn";
 import SubLayout from "../../../layout/SubLayout";
 import { createBoard } from "../../../api/board/boardApi";
@@ -10,7 +10,12 @@ function Write() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // const user = useSelector((state) => state.login.user); // 테스트용: Redux 의존성 제거
+
+  // ✅ 실제 로그인한 사용자 정보 가져오기
+  const loginState = useSelector((state) => state.login);
+  const { memberId, nickname, isLoggedIn } = loginState;
+
+  console.log("🔍 현재 로그인 상태:", { memberId, nickname, isLoggedIn });
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
@@ -18,11 +23,12 @@ function Write() {
       return;
     }
 
-    // 테스트용: 로그인 체크 주석처리
-    // if (!user || !user.userid) {
-    //   alert("로그인이 필요합니다.");
-    //   return;
-    // }
+    // ✅ 실제 로그인 체크
+    if (!isLoggedIn || !memberId) {
+      alert("로그인이 필요합니다.");
+      navigate("/member/login");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -32,13 +38,16 @@ function Write() {
         content: content.trim(),
       };
 
-      // 테스트용: 하드코딩된 memberId 사용 (DB의 실제 memberId)
-      const testMemberId = 9;
-      console.log("게시글 작성 요청:", { memberId: testMemberId, boardData });
+      // ✅ 실제 로그인한 사용자의 memberId 사용
+      console.log("🔍 게시글 작성 요청:", {
+        memberId,
+        nickname,
+        boardData,
+      });
 
       // 실제 API 호출
-      const response = await createBoard(testMemberId, boardData);
-      console.log("게시글 작성 성공:", response);
+      const response = await createBoard(memberId, boardData);
+      console.log("✅ 게시글 작성 성공:", response);
 
       alert("게시글이 등록되었습니다!");
       navigate(`/community/board/writeview/${response.id}`);

@@ -40,11 +40,14 @@ export default function ChatBot() {
 
     try {
       // 3. API 호출
-      const res = await axios.post(`${import.meta.env.VITE_CHATBOT_URL}/ask`, {
-        // header라는 key와 값을 포함하도록 요청 데이터에 추가
+      const res = await axios.post(
+        `${import.meta.env.VITE_PYTHON_URL}/chatbot/ask`,
+        {
+          // header라는 key와 값을 포함하도록 요청 데이터에 추가
 
-        question: currentInput,
-      });
+          question: currentInput,
+        }
+      );
 
       console.log("API 응답:", res.data);
 
