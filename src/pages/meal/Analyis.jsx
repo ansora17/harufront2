@@ -555,16 +555,17 @@ function Analyis() {
 
     // foods 배열 생성
     const foods = resultData.map((food) => {
+      const quantity = food.quantity || 1;
       const foodData = {
         foodName: food.name,
-        calories: food.calories || 0,
-        carbohydrate: food.carbohydrate || 0,
-        protein: food.protein || 0,
-        fat: food.fat || 0,
-        sodium: food.sodium || 0,
-        fiber: food.fiber || 0,
+        calories: Math.round((food.calories || 0) * quantity),
+        carbohydrate: Math.round((food.carbohydrate || 0) * quantity),
+        protein: Math.round((food.protein || 0) * quantity),
+        fat: Math.round((food.fat || 0) * quantity),
+        sodium: Math.round((food.sodium || 0) * quantity),
+        fiber: Math.round((food.fiber || 0) * quantity),
         totalAmount: food.gram || 0, // 🔥 gram을 totalAmount로 매핑
-        quantity: food.quantity || 1, // 🔥 실제 데이터에서 quantity 가져오기, 없으면 1
+        quantity: quantity, // 🔥 실제 데이터에서 quantity 가져오기, 없으면 1
         foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
@@ -1025,13 +1026,39 @@ function Analyis() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                <button
+                  className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500"
+                  onClick={() => {
+                    const currentQuantity =
+                      resultData[selectedFoodIndex]?.quantity || 1;
+                    if (currentQuantity > 1) {
+                      const updatedData = [...resultData];
+                      updatedData[selectedFoodIndex] = {
+                        ...updatedData[selectedFoodIndex],
+                        quantity: currentQuantity - 1,
+                      };
+                      setResultData(updatedData);
+                    }
+                  }}
+                >
                   −
                 </button>
                 <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                  {resultData[selectedFoodIndex]?.quantity || 0}
+                  {resultData[selectedFoodIndex]?.quantity || 1}
                 </div>
-                <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                <button
+                  className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500"
+                  onClick={() => {
+                    const currentQuantity =
+                      resultData[selectedFoodIndex]?.quantity || 1;
+                    const updatedData = [...resultData];
+                    updatedData[selectedFoodIndex] = {
+                      ...updatedData[selectedFoodIndex],
+                      quantity: currentQuantity + 1,
+                    };
+                    setResultData(updatedData);
+                  }}
+                >
                   ＋
                 </button>
               </div>
@@ -1043,25 +1070,41 @@ function Analyis() {
                 <div>
                   <span className="text-green-600">칼로리</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].calories || 0} kcal
+                    {Math.round(
+                      (resultData[selectedFoodIndex].calories || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}{" "}
+                    kcal
                   </div>
                 </div>
                 <div>
                   <span className="text-green-600">탄수화물</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].carbohydrate || 0}g
+                    {Math.round(
+                      (resultData[selectedFoodIndex].carbohydrate || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}
+                    g
                   </div>
                 </div>
                 <div>
                   <span className="text-yellow-600">단백질</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].protein || 0}g
+                    {Math.round(
+                      (resultData[selectedFoodIndex].protein || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}
+                    g
                   </div>
                 </div>
                 <div>
                   <span className="text-red-600">지방</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].fat || 0}g
+                    {Math.round(
+                      (resultData[selectedFoodIndex].fat || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}
+                    g
                   </div>
                 </div>
               </div>
@@ -1069,13 +1112,21 @@ function Analyis() {
                 <div>
                   <span className="text-blue-600">나트륨</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].sodium || 0}mg
+                    {Math.round(
+                      (resultData[selectedFoodIndex].sodium || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}
+                    mg
                   </div>
                 </div>
                 <div>
                   <span className="text-orange-600">식이섬유</span>
                   <div className="font-bold">
-                    {resultData[selectedFoodIndex].fiber || 0}g
+                    {Math.round(
+                      (resultData[selectedFoodIndex].fiber || 0) *
+                        (resultData[selectedFoodIndex]?.quantity || 1)
+                    )}
+                    g
                   </div>
                 </div>
               </div>
