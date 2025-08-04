@@ -1,14 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux"; // ✅ Redux 추가
 import SearchBar from "./SearchBar";
 import SubLayout from "../../../layout/SubLayout";
 import ChatBot from "../../chatbot/ChatBot";
 import { getAllBoards } from "../../../api/board/boardApi";
 
 function MainBoard() {
+  // ✅ 실제 로그인한 사용자 정보 가져오기
+  const loginState = useSelector((state) => state.login);
+  const { memberId: currentMemberId, nickname: currentNickname } = loginState;
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // ✅ 작성자 표시 함수
+  const getMemberDisplayName = (memberId) => {
+    if (memberId === currentMemberId) {
+      return currentNickname || `회원${memberId}`;
+    }
+    // 다른 사용자는 임시로 회원+ID 형태로 표시
+    // 향후 백엔드에서 작성자 닉네임을 포함해주면 개선 가능
+    return `회원${memberId}`;
+  };
 
   // 페이지네이션 상태 추가
   const [pagination, setPagination] = useState({
@@ -226,7 +241,9 @@ function MainBoard() {
                         </Link>
                       </td>
                       <td className="py-4 px-6 text-gray-600">
-                        {post.memberId ? `회원${post.memberId}` : "알 수 없음"}
+                        {post.memberId
+                          ? `${getMemberDisplayName(post.memberId)}`
+                          : "알 수 없음"}
                       </td>
                       <td className="py-4 px-6 text-gray-600">
                         {formatDate(post.createdAt)}

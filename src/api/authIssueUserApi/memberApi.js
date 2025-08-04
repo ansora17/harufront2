@@ -9,6 +9,8 @@ const axiosConfig = {
 
 // 회원 가입 (multipart: data + profileImage)
 export const signupMember = async (memberData, profileImage) => {
+  console.log("🔍 회원가입 API 호출:", `${API_BASE}/api/multipart`);
+
   const formData = new FormData();
   formData.append(
     "data",
@@ -17,7 +19,7 @@ export const signupMember = async (memberData, profileImage) => {
   if (profileImage) {
     formData.append("profileImage", profileImage);
   }
-  return axios.post(`${API_BASE}/multipart`, formData, {
+  return axios.post(`${API_BASE}/api/multipart`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
     ...axiosConfig,
   });
@@ -98,33 +100,73 @@ export const updatePhoto = async (photoUrl) => {
 
 // 회원 탈퇴 (내 계정)
 export const deleteAccount = async () => {
-  return axios.delete(`${API_BASE}/me`, axiosConfig).then((res) => res.data);
+  console.log("🔍 회원 탈퇴 API 호출:", `${API_BASE}/api/me`);
+  return axios
+    .delete(`${API_BASE}/api/me`, axiosConfig)
+    .then((res) => res.data);
 };
 
 // 이메일 중복 확인
 export const checkEmailExists = async (email) => {
-  return axios.get(`${API_BASE}/check-email`, {
-    params: { email },
-    ...axiosConfig,
-  });
+  console.log(
+    "🔍 이메일 중복체크 API 호출:",
+    `${API_BASE}/api/check-email?email=${email}`
+  );
+
+  try {
+    const response = await axios.get(`${API_BASE}/api/check-email`, {
+      params: { email },
+      ...axiosConfig,
+    });
+
+    console.log("✅ 이메일 중복체크 응답:", response.data);
+    return response;
+  } catch (error) {
+    console.error("❌ 이메일 중복체크 실패:", error);
+    console.error("❌ 요청 URL:", `${API_BASE}/api/check-email?email=${email}`);
+    throw error;
+  }
 };
 
 // 닉네임 중복 확인
 export const checkNicknameExists = async (nickname) => {
-  return axios.get(`${API_BASE}/check-nickname`, {
-    params: { nickname },
-    ...axiosConfig,
-  });
+  console.log(
+    "🔍 닉네임 중복체크 API 호출:",
+    `${API_BASE}/api/check-nickname?nickname=${nickname}`
+  );
+
+  try {
+    const response = await axios.get(`${API_BASE}/api/check-nickname`, {
+      params: { nickname },
+      ...axiosConfig,
+    });
+
+    console.log("✅ 닉네임 중복체크 응답:", response.data);
+    return response;
+  } catch (error) {
+    console.error("❌ 닉네임 중복체크 실패:", error);
+    console.error(
+      "❌ 요청 URL:",
+      `${API_BASE}/api/check-nickname?nickname=${nickname}`
+    );
+    throw error;
+  }
 };
 
 // 닉네임 찾기 (이름+이메일)
 export const searchNickname = async (form) => {
-  return axios.post(`${API_BASE}/search-nickname`, form, axiosConfig);
+  console.log("🔍 닉네임 찾기 API 호출:", `${API_BASE}/api/search-nickname`);
+  return axios.post(`${API_BASE}/api/search-nickname`, form, axiosConfig);
 };
 
 // 비밀번호 재설정 요청
 export const requestPasswordReset = async ({ name, email }) => {
-  return axios.post(`${API_BASE}/reset-password`, { name, email }, axiosConfig);
+  console.log("🔍 비밀번호 재설정 API 호출:", `${API_BASE}/api/reset-password`);
+  return axios.post(
+    `${API_BASE}/api/reset-password`,
+    { name, email },
+    axiosConfig
+  );
 };
 
 // 프로필 정보 수정 (general profile update without image)

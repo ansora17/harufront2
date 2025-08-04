@@ -4,6 +4,8 @@ import "react-calendar/dist/Calendar.css";
 import axios from "axios";
 import { format, isToday } from "date-fns";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "api";
+
 const DatePickerModal = ({
   open,
   onClose,
@@ -17,7 +19,7 @@ const DatePickerModal = ({
   useEffect(() => {
     if (!open) return;
     axios
-      .get(`/api/meals/recorded-dates/member/${memberId}`)
+      .get(`${API_BASE_URL}/meals/recorded-dates/member/${memberId}`)
       .then((res) => {
         setRecordedDates(res.data);
       })

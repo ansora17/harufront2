@@ -1,7 +1,7 @@
 // src/api/meal.js
 import axios from "axios";
 
-const API_BASE_URL = "/api"; // 프록시 사용을 위해 변경
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api"; // 프록시 사용을 위해 변경
 
 export const fetchMealsByMemberId = async (memberId) => {
   try {
@@ -18,7 +18,7 @@ export const fetchMealsByMemberId = async (memberId) => {
 export const fetchMealsByDate = async (memberId, date) => {
   try {
     const response = await axios.get(
-      `/api/meals/modified-date/member/${memberId}?date=${date}`
+      `${API_BASE_URL}/meals/modified-date/member/${memberId}?date=${date}`
     );
     return response.data;
   } catch (error) {
