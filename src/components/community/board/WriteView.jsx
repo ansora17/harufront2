@@ -36,6 +36,33 @@ function WriteView() {
     return `회원${memberId}`;
   };
 
+  // 반응형 날짜 포맷팅 함수
+  const formatDate = (dateString, isShort = false) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+
+    if (isShort) {
+      // 모바일용 짧은 형식: "08/01"
+      return date
+        .toLocaleDateString("ko-KR", {
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\./g, "/")
+        .replace(/\s/g, "");
+    } else {
+      // 데스크톱용 긴 형식: "2024. 08. 01"
+      return date
+        .toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\./g, ". ")
+        .trim();
+    }
+  };
+
   // 게시글 가져오기
   const fetchPost = async () => {
     try {
@@ -271,9 +298,13 @@ function WriteView() {
                   : "알 수 없음"}
               </span>
               <span>
-                {post.createdAt
-                  ? new Date(post.createdAt).toLocaleDateString("ko-KR")
-                  : ""}
+                {/* 데스크톱: 전체 날짜, 모바일: 짧은 날짜 */}
+                <span className="hidden sm:inline">
+                  {formatDate(post.createdAt, false)}
+                </span>
+                <span className="sm:hidden">
+                  {formatDate(post.createdAt, true)}
+                </span>
               </span>
             </div>
           </div>

@@ -156,9 +156,16 @@ function Issue() {
                   <th className="hidden sm:table-cell py-4 px-6 text-left w-[10%]">
                     번호
                   </th>
-                  <th className="py-4 px-6 text-left w-[50%]">제목</th>
-                  <th className="py-4 px-6 text-left w-[20%]">작성자</th>
-                  <th className="py-4 px-6 text-left w-[20%]">작성일</th>
+                  <th className="py-4 px-3 sm:px-6 text-left w-[45%] sm:w-[50%]">
+                    제목
+                  </th>
+                  <th className="py-4 px-3 sm:px-6 text-left w-[25%] sm:w-[20%]">
+                    작성자
+                  </th>
+                  <th className="py-4 px-3 sm:px-6 text-left w-[30%] sm:w-[20%]">
+                    <span className="hidden sm:inline">작성일</span>
+                    <span className="sm:hidden">날짜</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -170,10 +177,10 @@ function Issue() {
                     <td className="hidden sm:table-cell py-4 px-6 text-gray-600">
                       {issue.id}
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-4 px-3 sm:px-6">
                       <Link
                         to={`/community/issue/${issue.id}`}
-                        className="text-gray-900  transition-colors duration-150 line-clamp-1"
+                        className="text-gray-900 transition-colors duration-150 line-clamp-1 hover:text-purple-600"
                         onClick={() =>
                           localStorage.setItem("selectedIssueId", issue.id)
                         }
@@ -181,8 +188,15 @@ function Issue() {
                         {issue.title}
                       </Link>
                     </td>
-                    <td className="py-4 px-6 text-gray-600">{issue.writer}</td>
-                    <td className="py-4 px-6 text-gray-600">{issue.date}</td>
+                    <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
+                      {issue.writer}
+                    </td>
+                    <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
+                      <span className="hidden sm:inline">{issue.date}</span>
+                      <span className="sm:hidden">
+                        {issue.date.split(".").slice(1, 3).join(".")}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

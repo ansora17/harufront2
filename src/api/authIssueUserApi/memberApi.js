@@ -7,20 +7,13 @@ const axiosConfig = {
   // withCredentials는 axiosInstance에서 이미 설정됨
 };
 
-// 회원 가입 (multipart: data + profileImage)
-export const signupMember = async (memberData, profileImage) => {
-  console.log("🔍 회원가입 API 호출:", `${API_BASE}/api/multipart`);
+// 회원 가입 (JSON 형태)
+export const signupMember = async (memberData) => {
+  console.log("🔍 회원가입 API 호출:", `${API_BASE}/api/members/signup`);
+  console.log("🔍 회원가입 데이터:", memberData);
 
-  const formData = new FormData();
-  formData.append(
-    "data",
-    new Blob([JSON.stringify(memberData)], { type: "application/json" })
-  );
-  if (profileImage) {
-    formData.append("profileImage", profileImage);
-  }
-  return axios.post(`${API_BASE}/api/multipart`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+  return axios.post(`${API_BASE}/api/members/signup`, memberData, {
+    headers: { "Content-Type": "application/json" },
     ...axiosConfig,
   });
 };
@@ -110,11 +103,11 @@ export const deleteAccount = async () => {
 export const checkEmailExists = async (email) => {
   console.log(
     "🔍 이메일 중복체크 API 호출:",
-    `${API_BASE}/api/check-email?email=${email}`
+    `${API_BASE}/api/members/check-email?email=${email}`
   );
 
   try {
-    const response = await axios.get(`${API_BASE}/api/check-email`, {
+    const response = await axios.get(`${API_BASE}/api/members/check-email`, {
       params: { email },
       ...axiosConfig,
     });
@@ -123,7 +116,10 @@ export const checkEmailExists = async (email) => {
     return response;
   } catch (error) {
     console.error("❌ 이메일 중복체크 실패:", error);
-    console.error("❌ 요청 URL:", `${API_BASE}/api/check-email?email=${email}`);
+    console.error(
+      "❌ 요청 URL:",
+      `${API_BASE}/api/members/check-email?email=${email}`
+    );
     throw error;
   }
 };
@@ -132,11 +128,11 @@ export const checkEmailExists = async (email) => {
 export const checkNicknameExists = async (nickname) => {
   console.log(
     "🔍 닉네임 중복체크 API 호출:",
-    `${API_BASE}/api/check-nickname?nickname=${nickname}`
+    `${API_BASE}/api/members/check-nickname?nickname=${nickname}`
   );
 
   try {
-    const response = await axios.get(`${API_BASE}/api/check-nickname`, {
+    const response = await axios.get(`${API_BASE}/api/members/check-nickname`, {
       params: { nickname },
       ...axiosConfig,
     });
@@ -147,7 +143,7 @@ export const checkNicknameExists = async (nickname) => {
     console.error("❌ 닉네임 중복체크 실패:", error);
     console.error(
       "❌ 요청 URL:",
-      `${API_BASE}/api/check-nickname?nickname=${nickname}`
+      `${API_BASE}/api/members/check-nickname?nickname=${nickname}`
     );
     throw error;
   }
@@ -155,15 +151,21 @@ export const checkNicknameExists = async (nickname) => {
 
 // 닉네임 찾기 (이름+이메일)
 export const searchNickname = async (form) => {
-  console.log("🔍 닉네임 찾기 API 호출:", `${API_BASE}/api/search-nickname`);
-  return axios.post(`${API_BASE}/api/search-nickname`, form, axiosConfig);
+  console.log(
+    "🔍 닉네임 찾기 API 호출:",
+    `${API_BASE}/api/members/find-nickname`
+  );
+  return axios.post(`${API_BASE}/api/members/find-nickname`, form, axiosConfig);
 };
 
 // 비밀번호 재설정 요청
 export const requestPasswordReset = async ({ name, email }) => {
-  console.log("🔍 비밀번호 재설정 API 호출:", `${API_BASE}/api/reset-password`);
+  console.log(
+    "🔍 비밀번호 재설정 API 호출:",
+    `${API_BASE}/api/members/reset-password`
+  );
   return axios.post(
-    `${API_BASE}/api/reset-password`,
+    `${API_BASE}/api/members/reset-password`,
     { name, email },
     axiosConfig
   );
@@ -175,12 +177,24 @@ export const updateProfile = async (profileData) => {
 
   try {
     // Use axios (which is your configured axiosInstance)
-    const response = await axios.put(`/api/members/me`, profileData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      ...axiosConfig,
+    // memberId를 URL에 포함하고 요청 바디에서는 제거
+    const { id: memberId, ...updateData } = profileData;
+
+    console.log("🔍 Sending profile update request:", {
+      url: `${API_BASE}/api/members/${memberId}`,
+      data: updateData,
     });
+
+    const response = await axios.put(
+      `${API_BASE}/api/members/${memberId}`,
+      updateData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        ...axiosConfig,
+      }
+    );
 
     console.log("✅ Profile update successful:", response.data);
     return response.data;

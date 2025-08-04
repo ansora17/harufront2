@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function MealCard({ meal }) {
+export default function MealCard({ meal, onClose }) {
   // 시간 포맷팅 함수
   const formatTime = (dateString) => {
     if (!dateString) return "";
@@ -13,16 +13,18 @@ export default function MealCard({ meal }) {
 
   return (
     <div className="bg-gray-50 rounded-2xl p-3 sm:p-4 shadow-sm">
-      <div className="">
-        <div className="">
-          {/* 식사 정보 헤더 */}
-          <div className="mb-3">
-            <img
-              className="w-32 h-32 rounded-xl object-cover"
-              src={meal.imageUrl || meal.image || "/images/food_1.jpg"}
-              alt="음식 사진"
-            />
-          </div>
+      <div className="flex gap-4">
+        {/* 왼쪽: 이미지 */}
+        <div className="shrink-0">
+          <img
+            className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl object-cover"
+            src={meal.imageUrl || meal.image || "/images/food_1.jpg"}
+            alt="음식 사진"
+          />
+        </div>
+
+        {/* 오른쪽: 텍스트 정보 */}
+        <div className="flex-1">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base sm:text-lg font-semibold text-gray-800">
               {meal.type}
@@ -31,7 +33,7 @@ export default function MealCard({ meal }) {
               </span>
             </h3>
 
-            <div className="text-right mt-1 sm:mt-0">
+            <div className="text-right">
               <p className="text-base sm:text-lg font-semibold">
                 {meal.totalKcal || meal.kcal || meal.calories}kcal
               </p>
