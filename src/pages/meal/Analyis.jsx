@@ -121,7 +121,24 @@ function Analyis() {
     });
   };
 
+  // 🔥 음식만 삭제하는 함수 (이미지는 유지)
+  const handleRemoveFood = (index) => {
+    console.log("🍽️ 음식 삭제:", index);
+
+    // 음식 데이터만 삭제 (이미지는 유지)
+    setResultData((prev) => prev.filter((_, i) => i !== index));
+
+    // 🔥 선택된 음식이 제거되면 선택 상태 초기화
+    if (selectedFoodIndex === index) {
+      setSelectedFoodIndex(null);
+    } else if (selectedFoodIndex > index) {
+      setSelectedFoodIndex(selectedFoodIndex - 1);
+    }
+  };
+
+  // 🔥 이미지 전체 삭제하는 함수 (기존 함수명 유지)
   const handleRemoveImage = (index) => {
+    console.log("🖼️ 이미지 전체 삭제:", index);
     setImages((prev) => prev.filter((_, i) => i !== index));
     setResultData((prev) => prev.filter((_, i) => i !== index));
     // 🔥 선택된 음식이 제거되면 선택 상태 초기화
@@ -437,33 +454,41 @@ function Analyis() {
     };
   };
 
-  // 🔥 이미지를 Supabase에 업로드하는 함수
+  // 🔥 이미지를 Supabase에 업로드하는 함수 (ProfileImage.jsx 참고)
   const uploadImageToSupabase = async (file) => {
     try {
+      console.log("🔥 Supabase 업로드 시작:", file.name);
+
+      // 🔥 단순한 파일명 생성 (ProfileImage.jsx와 동일한 방식)
       const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random()
+      const fileName = `${Date.now()}_${Math.random()
         .toString(36)
         .substring(2)}.${fileExt}`;
       const filePath = `meal-images/${fileName}`;
 
+      console.log("📁 파일 경로:", filePath);
+
+      // 🔥 Supabase Storage에 업로드 (ProfileImage.jsx와 동일한 방식)
       const { data, error } = await supabase.storage
-        .from("meal-images")
+        .from("harukcal")
         .upload(filePath, file);
 
       if (error) {
-        console.error("이미지 업로드 실패:", error);
+        console.error("❌ 업로드 에러:", error);
         throw error;
       }
 
-      // 업로드된 이미지의 공개 URL 가져오기
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("meal-images").getPublicUrl(filePath);
+      // 🔥 공개 URL 가져오기 (ProfileImage.jsx와 동일한 방식)
+      const { data: urlData } = supabase.storage
+        .from("harukcal")
+        .getPublicUrl(filePath);
 
-      console.log("✅ 이미지 업로드 성공:", publicUrl);
+      const publicUrl = urlData.publicUrl;
+      console.log("✅ 업로드 성공, URL:", publicUrl);
+
       return publicUrl;
     } catch (error) {
-      console.error("이미지 업로드 오류:", error);
+      console.error("❌ 업로드 중 에러:", error);
       throw error;
     }
   };
@@ -543,11 +568,14 @@ function Analyis() {
       return foodData;
     });
 
-    // 🔥 이미지 업로드 처리
+    // 🔥 이미지 업로드 처리 (ProfileImage.jsx 참고)
     let imageUrl = "";
     if (images.length > 0 && images[0].file) {
       try {
         console.log("📤 이미지를 Supabase에 업로드 중...");
+        console.log("📁 업로드할 파일:", images[0].file.name);
+        console.log("📏 파일 크기:", images[0].file.size, "bytes");
+
         imageUrl = await uploadImageToSupabase(images[0].file);
         console.log("✅ 이미지 업로드 완료:", imageUrl);
       } catch (error) {
@@ -556,6 +584,8 @@ function Analyis() {
           "이미지 업로드에 실패했습니다. 식사 기록은 저장되지만 이미지는 포함되지 않습니다."
         );
       }
+    } else {
+      console.log("ℹ️ 업로드할 이미지가 없습니다.");
     }
 
     // 🔥 백엔드 API 호출 시 memo 포함
@@ -653,7 +683,7 @@ function Analyis() {
         <div className="border-b border-gray-300">
           {/* 이미지 업로드 */}
           <div
-            className="relative bg-gray-200 h-60 sm:h-64 md:h-82 rounded-xl flex items-center justify-center mb-6 cursor-pointer"
+            className="relative bg-gray-200 h-60 sm:h-64 md:h-92 rounded-xl flex items-center justify-center mb-6 cursor-pointer"
             onClick={handleImageClick}
           >
             {images.length > 0 ? (
@@ -664,10 +694,25 @@ function Analyis() {
                   className="object-cover w-full h-full rounded-xl"
                 />
                 {resultData[0]?.name && (
-                  <div className="absolute top-4 left-4 bg-purple-500/90 text-white text-xl font-bold px-4 py-2 rounded-full">
+                  <div className="absolute top-4 left-4 bg-purple-500/70 text-white text-xl font-bold px-4 py-2 rounded-full">
                     {resultData[0].name}
                   </div>
                 )}
+                {/* 🔥 이미지 전체 삭제 버튼 */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // 이벤트 버블링 방지
+                    if (
+                      confirm("이미지와 모든 음식 정보를 삭제하시겠습니까?")
+                    ) {
+                      handleRemoveImage(0); // 첫 번째 이미지 삭제
+                    }
+                  }}
+                  className="absolute top-4 right-4 bg-red-500/90 text-white rounded-full px-3 py-2 flex items-center justify-center cursor-pointer hover:bg-red-600/90 transition-colors"
+                  title="이미지 전체 삭제"
+                >
+                  이미지 삭제
+                </button>
               </>
             ) : (
               <span className="text-4xl text-gray-400">＋</span>
@@ -848,9 +893,10 @@ function Analyis() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // 🔥 이벤트 버블링 방지
-                      handleRemoveImage(i);
+                      handleRemoveFood(i); // 🔥 음식만 삭제 (이미지는 유지)
                     }}
-                    className="absolute top-2 right-2 bg-black/40 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+                    className="absolute top-2 right-2 bg-black/40 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
+                    title="이 음식만 삭제"
                   >
                     ×
                   </button>
