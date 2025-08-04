@@ -245,10 +245,10 @@ function Result() {
 
           {/* 총 섭취량 */}
           <div className="bg-gray-100 rounded-xl p-7 pb-7 mb-6">
-            <div className="flex justify-between font-bold text-lg mb-6 px-10">
-              <h2>총 섭취량</h2>
-              <div className="flex">
-                <p>
+            <div className="flex justify-between font-bold text-lg sm:text-lg text-base mb-6 px-4 sm:px-10">
+              <h2 className="sm:text-lg text-base">총 섭취량</h2>
+              <div className="flex items-end">
+                <p className="sm:text-lg text-base">
                   {mealRecord.foods && Array.isArray(mealRecord.foods)
                     ? mealRecord.foods.reduce(
                         (sum, food) => sum + (food.calories || food.kcal || 0),
@@ -256,10 +256,12 @@ function Result() {
                       )
                     : mealRecord.totalCalories || mealRecord.calories || 0}
                 </p>
-                <span className="text-purple-500">kcal</span>
+                <span className="text-purple-500 sm:text-base text-sm ml-1">
+                  kcal
+                </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-base">
+            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-4 text-center sm:text-base text-sm">
               {[
                 [
                   "탄수화물",
@@ -303,11 +305,14 @@ function Result() {
                     : mealRecord.totalQuantity || 0,
                 ],
               ].map(([label, value], i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold">
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-1 sm:gap-2"
+                >
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 bg-gray-300 rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
                     {value}
                   </div>
-                  <span>{label}</span>
+                  <span className="sm:text-base text-xs">{label}</span>
                 </div>
               ))}
             </div>
@@ -316,7 +321,9 @@ function Result() {
 
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
           <div className="flex justify-between font-bold text-2xl ">
-            <h2 className="text-lg sm:text-xl font-semibold">음식 정보 수정</h2>
+            <h2 className="text-base sm:text-xl font-semibold">
+              음식 정보 수정
+            </h2>
           </div>
         </div>
 
@@ -538,7 +545,7 @@ function Result() {
         {/* 🔥 사용자 체중 입력 섹션 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
           <div className="flex justify-between font-bold text-2xl ">
-            <h2 className="text-lg sm:text-xl font-semibold">체중 기록</h2>
+            <h2 className="text-base sm:text-xl font-semibold">체중 기록</h2>
           </div>
         </div>
         <div className="mb-4 p-4 bg-gray-50 rounded-lg">
@@ -566,7 +573,7 @@ function Result() {
         {/* 🔥 메모 입력 필드 추가 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
           <div className="flex justify-between font-bold text-2xl ">
-            <h2 className="text-lg sm:text-xl font-semibold">메모</h2>
+            <h2 className="text-base sm:text-xl font-semibold">메모</h2>
           </div>
         </div>
         <div className="mb-4">
