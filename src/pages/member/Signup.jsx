@@ -166,7 +166,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-purple-200 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-purple-200 flex flex-col justify-center py-12  sm:px-6 lg:px-8 relative overflow-hidden">
       {/* 🎨 배경 장식 요소들 */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-purple-300 rounded-full opacity-20 animate-pulse"></div>

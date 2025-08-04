@@ -28,6 +28,8 @@ function Analyis() {
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
   const [isMealTypeModalOpen, setIsMealTypeModalOpen] = useState(false);
   const [memo, setMemo] = useState("");
+  // 🔥 체중 입력을 위한 상태 추가
+  const [recordWeight, setRecordWeight] = useState("");
   // 🔥 선택된 음식 인덱스 상태 추가
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
   // 🔥 이미지 선택 모달 상태 추가
@@ -509,21 +511,20 @@ function Analyis() {
       return foodData;
     });
 
-    // 🔥 백엔드 API 호출 시 memo 포함
-    const mealData = {
-      mealType: mealTypeMap[selectedMeal] || "정보 없음",
-      imageUrl: "",
-      memo: memo || "", // 🔥 메모 추가
-      foods: foods,
-      modifiedAt: modifiedAtStr,
-      totalCalories: parseInt(totalNutrition.kcal) || 0,
-      totalCarbs: parseInt(totalNutrition.carbs) || 0,
-      totalProtein: parseInt(totalNutrition.protein) || 0,
-      totalFat: parseInt(totalNutrition.fat) || 0,
-      // 🔥 사용자 체중 정보 추가
-      recordWeight:
-        currentUser && currentUser.weight ? currentUser.weight : null,
-    };
+          // 🔥 백엔드 API 호출 시 memo 포함
+      const mealData = {
+        mealType: mealTypeMap[selectedMeal] || "정보 없음",
+        imageUrl: "",
+        memo: memo || "", // 🔥 메모 추가
+        foods: foods,
+        modifiedAt: modifiedAtStr,
+        totalCalories: parseInt(totalNutrition.kcal) || 0,
+        totalCarbs: parseInt(totalNutrition.carbs) || 0,
+        totalProtein: parseInt(totalNutrition.protein) || 0,
+        totalFat: parseInt(totalNutrition.fat) || 0,
+        // 🔥 사용자 체중 정보 추가
+        recordWeight: recordWeight ? parseFloat(recordWeight) : null,
+      };
 
     console.log("✅ 식사 저장 데이터:", mealData);
 
@@ -544,6 +545,7 @@ function Analyis() {
       setImages([]);
       setResultData([]);
       setMemo(""); // 메모도 초기화
+      setRecordWeight(""); // 체중 입력 필드도 초기화
       setTimestamp(new Date());
     } catch (error) {
       console.error("❌ 식사 저장 실패:", error);
@@ -563,7 +565,7 @@ function Analyis() {
   return (
     <>
       <SubLayout to={"/"} menu={"식단분석"} label={"식사요약"} />
-      <div className="w-full max-w-[1020px] mx-auto px-4 py-4">
+      <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
           <input
@@ -673,7 +675,7 @@ function Analyis() {
           <div className="flex gap-4 w-max px-1 pb-2 min-w-full">
             {/* 음식 추가 버튼 */}
             <div
-              className={`min-w-[44px] h-56 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl ${
+              className={`min-w-[44px] h-44 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl ${
                 resultData && resultData.length > 0
                   ? "cursor-pointer"
                   : "cursor-not-allowed opacity-50"
@@ -767,7 +769,7 @@ function Analyis() {
             {resultData.map((food, i) => (
               <div key={i} className="flex flex-col items-center">
                 <div
-                  className={`relative w-[200px] h-[200px] bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                  className={`relative w-[150px] h-[150px] bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 ${
                     selectedFoodIndex === i
                       ? "ring-4 ring-purple-500 bg-purple-100"
                       : ""
@@ -897,38 +899,48 @@ function Analyis() {
           </div>
         )}
 
-        {/* 🔥 사용자 정보 표시 */}
-        {currentUser && (currentUser.weight || currentUser.height) && (
-          <>
-            <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
-              <div className="flex justify-between font-bold text-2xl ">
-                <h2 className="text-lg sm:text-xl font-semibold">
-                  사용자 정보
-                </h2>
-              </div>
+        {/* 🔥 사용자 체중 입력 섹션 */}
+        <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
+          <div className="flex justify-between font-bold text-2xl ">
+            <h2 className="text-lg sm:text-xl font-semibold">체중 기록</h2>
+          </div>
+        </div>
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 font-medium">현재 체중:</span>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="300"
+                placeholder="체중을 입력하세요"
+                value={recordWeight}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setRecordWeight(value);
+                  console.log("체중 입력:", value); // 디버깅용
+                }}
+                onKeyPress={(e) => {
+                  // 숫자와 소수점만 허용
+                  if (!/[0-9.]/.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                className="input input-bordered w-32 text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+              <span className="text-gray-600 font-medium">kg</span>
             </div>
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-4">
-                {currentUser.weight && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">현재 체중:</span>
-                    <span className="font-bold text-purple-500">
-                      {currentUser.weight} kg
-                    </span>
-                  </div>
-                )}
-                {currentUser.height && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">키:</span>
-                    <span className="font-bold text-purple-500">
-                      {currentUser.height} cm
-                    </span>
-                  </div>
-                )}
+            {/* {currentUser && currentUser.height && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">키:</span>
+                <span className="font-bold text-purple-500">
+                  {currentUser.height} cm
+                </span>
               </div>
-            </div>
-          </>
-        )}
+            )} */}
+          </div>
+        </div>
 
         {/* 🔥 메모 입력 필드 추가 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
