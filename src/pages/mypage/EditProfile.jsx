@@ -37,19 +37,23 @@ export default function EditProfile() {
 
   // 🔥 사용자 데이터 가져오기 방법 변경
   useEffect(() => {
-    const memberData = getCookie("member"); // 🔥 getUserData() → getCookie("member")
-    if (memberData) {
+    const memberData = getCookie("member");
+    console.log("🔄 초기 데이터 설정 - 쿠키:", memberData);
+    console.log("🔄 초기 데이터 설정 - Redux:", loginState);
+
+    if (memberData || loginState) {
       setForm({
-        name: memberData.name || "",
-        birthAt: memberData.birthAt || "",
-        gender: memberData.gender || "FEMALE",
-        height: memberData.height || "",
-        weight: memberData.weight || "",
-        activityLevel: memberData.activityLevel || "MODERATE", // Fixed to match backend
-        photo: memberData.photo || "",
+        name: memberData?.nickname || loginState?.nickname || "",
+        birthAt: memberData?.birthAt || loginState?.birthAt || "",
+        gender: memberData?.gender || loginState?.gender || "FEMALE",
+        height: memberData?.height || loginState?.height || "",
+        weight: memberData?.weight || loginState?.weight || "",
+        activityLevel:
+          memberData?.activityLevel || loginState?.activityLevel || "MODERATE",
+        photo: memberData?.photo || loginState?.photo || "",
       });
     }
-  }, []);
+  }, [loginState]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -140,16 +144,17 @@ export default function EditProfile() {
         throw new Error("사용자 정보를 찾을 수 없습니다.");
       }
 
-      // 데이터 정리 및 변환
+      // 데이터 정리 및 변환 (UpdateRequest DTO 형식에 맞춤)
       const formData = {
-        id: memberId, // 쿠키나 Redux에서 가져온 memberId 사용
-        name: form.name,
+        nickname: form.name,
         birthAt: form.birthAt,
         gender: form.gender,
         height: form.height ? parseFloat(form.height) : null,
         weight: form.weight ? parseFloat(form.weight) : null,
         activityLevel: form.activityLevel,
       };
+
+      console.log("📤 전송할 데이터:", formData);
 
       // 빈 문자열이나 undefined 값 제거
       Object.keys(formData).forEach((key) => {

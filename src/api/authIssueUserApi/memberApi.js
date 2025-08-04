@@ -1,5 +1,5 @@
-// import axios from "./axiosInstance";
 import axios from "./axiosInstance";
+import { getCookie } from "../../utils/cookieUtils";
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
 // axios 기본 설정
@@ -177,17 +177,22 @@ export const updateProfile = async (profileData) => {
 
   try {
     // Use axios (which is your configured axiosInstance)
-    // memberId를 URL에 포함하고 요청 바디에서는 제거
-    const { id: memberId, ...updateData } = profileData;
+    // 현재 로그인한 사용자의 ID 가져오기
+    const memberData = getCookie("member");
+    const memberId = memberData?.id;
+
+    if (!memberId) {
+      throw new Error("사용자 정보를 찾을 수 없습니다.");
+    }
 
     console.log("🔍 Sending profile update request:", {
       url: `${API_BASE}/api/members/${memberId}`,
-      data: updateData,
+      data: profileData,
     });
 
     const response = await axios.put(
       `${API_BASE}/api/members/${memberId}`,
-      updateData,
+      profileData,
       {
         headers: {
           "Content-Type": "application/json",

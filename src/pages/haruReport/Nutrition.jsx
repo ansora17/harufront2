@@ -6,7 +6,7 @@ import {
   setMonthlyLoading,
   setMonthlyError,
   clearMonthlyError,
-  fetchMonthlyMealRecordsThunk,
+  fetchMealRecordsByDateRangeThunk,
 } from "../../slices/mealSlice";
 import {
   fetchMonthlyMeals,
@@ -103,12 +103,16 @@ const Nutrition = () => {
       return;
     }
 
-    // 🔥 mealSlice thunk 액션 dispatch
+    // 🔥 mealSlice thunk 액션 dispatch - 3개월 데이터 가져오기
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 3);
+
     dispatch(
-      fetchMonthlyMealRecordsThunk({
+      fetchMealRecordsByDateRangeThunk({
         memberId,
-        year: targetYear,
-        month: targetMonth,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
       })
     );
   }, [

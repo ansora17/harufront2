@@ -141,19 +141,28 @@ export default function Signup() {
 
     try {
       setIsLoading(true);
-      const { passwordConfirm, ...signupData } = form;
-
-      // Send signup request (with profile image included in data)
-      const finalSignupData = {
-        ...signupData,
-        profileImageUrl: profileImage || null,
+      // 숫자 필드 변환
+      const signupData = {
+        email: form.email,
+        password: form.password,
+        nickname: form.nickname,
+        name: form.name,
+        birthAt: form.birthAt,
+        gender: form.gender,
+        height: form.height ? parseFloat(form.height) : null,
+        weight: form.weight ? parseFloat(form.weight) : null,
+        activityLevel: form.activityLevel,
+        role: form.role,
       };
 
-      const response = await signupMember(finalSignupData);
+      // 디버깅 로그 추가
+      console.log("📤 회원가입 요청 데이터:", signupData);
+
+      const response = await signupMember(signupData);
 
       //check for API testing
       console.log("Final signup POST request sent");
-      console.log("finalSignupData:", finalSignupData);
+      //console.log("finalSignupData:", finalSignupData);
       console.log("response:", response);
       console.log("response.data:", response.data);
 
@@ -784,10 +793,10 @@ export default function Signup() {
                     options={[
                       {
                         value: "HIGH",
-                        label: "🏃‍♀️ 매우 활동적 (주 5회 이상 운동)",
+                        label: "매우 활동적 (주 5회 이상 운동)",
                       },
-                      { value: "MODERATE", label: "🚶‍♀️ 활동적 (주 2-4회 운동)" },
-                      { value: "LOW", label: "🛋️ 낮음 (운동을 거의 안함)" },
+                      { value: "MODERATE", label: "활동적 (주 2-4회 운동)" },
+                      { value: "LOW", label: "낮음 (운동을 거의 안함)" },
                     ]}
                     disabled={isLoading}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white/90"

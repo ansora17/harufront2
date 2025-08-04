@@ -15,6 +15,7 @@ import {
 const WeightChart = ({ period }) => {
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState("week"); // 'week' 또는 'month'
 
   // 🔥 Redux에서 사용자 정보와 meal 데이터 가져오기
   const loginState = useSelector((state) => state.login);
@@ -108,10 +109,30 @@ const WeightChart = ({ period }) => {
       }
     }
 
-    // 🔥 더 간단한 방법: 모든 체중 데이터를 날짜별로 그룹화 후 최근 7개만 표시
+    // 🔥 체중 데이터를 날짜별로 그룹화
     const weightDataByDate = new Map();
 
-    // meal 데이터에서 체중 정보 추출하여 날짜별로 그룹화
+    // 현재 날짜 설정
+    const realToday = new Date();
+    const today = new Date(
+      realToday.getFullYear(),
+      realToday.getMonth(),
+      realToday.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+
+    // 7월 15일 날짜 설정
+    const startDate = new Date(2023, 6, 15, 0, 0, 0, 0); // 월은 0부터 시작하므로 6이 7월
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("오늘 날짜:", today.toISOString());
+      console.log("시작 날짜:", startDate.toISOString());
+    }
+
+    // meal 데이터에서 체중 정보 추출하여 날짜별로 그룹화 (과거 20일 데이터)
     monthlyMealRecords.forEach((record) => {
       if (
         record.record_weight ||
@@ -121,18 +142,28 @@ const WeightChart = ({ period }) => {
         record.memberWeight
       ) {
         const recordDate = new Date(record.modifiedAt || record.createDate);
-        const dateStr = recordDate.toISOString().split("T")[0];
-        const displayDate = `${
-          recordDate.getMonth() + 1
-        }/${recordDate.getDate()}`;
+        const normalizedRecordDate = new Date(
+          recordDate.getFullYear(),
+          recordDate.getMonth(),
+          recordDate.getDate(),
+          0,
+          0,
+          0,
+          0
+        );
 
-        if (!weightDataByDate.has(dateStr)) {
-          weightDataByDate.set(dateStr, {
-            date: displayDate,
-            weights: [],
-            actualDate: recordDate,
-          });
+        // 현재 날짜보다 미래이거나 20일 이전의 데이터는 제외
+        if (normalizedRecordDate > today || normalizedRecordDate < startDate) {
+          if (process.env.NODE_ENV === "development") {
+            console.log("제외된 데이터:", normalizedRecordDate.toISOString());
+          }
+          return;
         }
+
+        const dateKey = normalizedRecordDate.toISOString().split("T")[0];
+        const displayDate = `${
+          normalizedRecordDate.getMonth() + 1
+        }/${normalizedRecordDate.getDate()}`;
 
         const weight =
           record.record_weight ||
@@ -140,23 +171,55 @@ const WeightChart = ({ period }) => {
           record.weight ||
           record.userWeight ||
           record.memberWeight;
-        weightDataByDate.get(dateStr).weights.push(weight);
+
+        if (!weightDataByDate.has(dateKey)) {
+          weightDataByDate.set(dateKey, {
+            dateKey,
+            date: displayDate,
+            weights: [],
+            actualDate: recordDate,
+          });
+        }
+        weightDataByDate.get(dateKey).weights.push(weight);
       }
     });
 
-    // 날짜별 데이터를 배열로 변환하고 날짜순 정렬
-    const result = Array.from(weightDataByDate.values())
-      .sort((a, b) => a.actualDate - b.actualDate)
-      .map(({ date, weights }) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("수집된 전체 체중 데이터:", weightDataByDate);
+    }
+
+    // 데이터가 있는 날짜들만 추출하고 정렬
+    // 현재 날짜 이전의 데이터만 필터링하고 날짜순으로 정렬
+    const availableDates = Array.from(weightDataByDate.entries())
+      .map(([dateKey, data]) => ({
+        dateKey,
+        date: new Date(data.actualDate),
+        displayDate: data.date,
+        weights: data.weights,
+      }))
+      .filter(({ date }) => date <= today)
+      .sort((a, b) => b.date - a.date); // 최신 날짜순 정렬
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("사용 가능한 데이터:", availableDates);
+    }
+
+    // 선택된 기간에 따라 데이터 개수 결정 (7일 또는 30일)
+    const dataLimit = selectedPeriod === "week" ? 7 : 30;
+
+    // 필터링된 데이터 중에서 최근 N개 선택
+    const result = availableDates
+      .slice(0, dataLimit) // 선택된 기간만큼 선택
+      .reverse() // 과거순으로 정렬
+      .map(({ displayDate, weights }) => {
         // 하루에 여러 체중 기록이 있으면 평균값 사용
-        const averageWeight =
+        const avgWeight =
           weights.reduce((sum, w) => sum + w, 0) / weights.length;
         return {
-          date,
-          weight: Math.round(averageWeight * 10) / 10, // 소수점 1자리로 반올림
+          date: displayDate,
+          weight: Math.round(avgWeight * 10) / 10,
         };
-      })
-      .slice(-7); // 최근 7개만 표시
+      });
 
     if (process.env.NODE_ENV === "development") {
       console.log("🔍 WeightChart: 최종 처리된 체중 데이터:", result);
@@ -216,14 +279,29 @@ const WeightChart = ({ period }) => {
               </div>
             )}
           </div>
-        </div>
-
-        {weightTrend && (
-          <div className="text-xs text-gray-400">
-            최근 7일간 {Math.abs(weightTrend.changePercent)}%{" "}
-            {weightTrend.trend}
+          <div className="flex justify-end mb-4 space-x-2">
+            <button
+              onClick={() => setSelectedPeriod("week")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                selectedPeriod === "week"
+                  ? "bg-purple-700 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              7일
+            </button>
+            <button
+              onClick={() => setSelectedPeriod("month")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                selectedPeriod === "month"
+                  ? "bg-purple-700 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              30일
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {data.length > 0 ? (
@@ -262,9 +340,36 @@ const WeightChart = ({ period }) => {
                 dataKey="weight"
                 stroke="#8884d8"
                 strokeWidth={3}
-                dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: "#8884d8", strokeWidth: 2 }}
+                dot={(props) => {
+                  const isEstimated = props.payload.isEstimated;
+                  return (
+                    <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={4}
+                      fill={isEstimated ? "#ffffff" : "#8884d8"}
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      style={isEstimated ? { strokeDasharray: "2 2" } : {}}
+                    />
+                  );
+                }}
+                activeDot={(props) => {
+                  const isEstimated = props.payload.isEstimated;
+                  return (
+                    <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={6}
+                      fill={isEstimated ? "#ffffff" : "#8884d8"}
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      style={isEstimated ? { strokeDasharray: "2 2" } : {}}
+                    />
+                  );
+                }}
                 name="체중"
+                connectNulls={true}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -273,23 +378,7 @@ const WeightChart = ({ period }) => {
         <div className="w-full h-[280px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
           <div className="text-center p-8">
             <div className="mb-4"></div>
-            <p className="text-gray-600 font-medium mb-2">
-              최근 7일간 체중 기록이 없습니다
-            </p>
-            <p className="text-sm text-gray-500">
-              식사 기록 시 체중을 함께 입력하면 <br />
-              체중 변화 추이를 확인할 수 있어요
-            </p>
           </div>
-        </div>
-      )}
-
-      {/* 🔥 체중 기록 팁 */}
-      {data.length > 0 && data.length < 3 && (
-        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-700">
-            💡 더 정확한 체중 변화 추이를 보려면 매일 체중을 기록해보세요!
-          </p>
         </div>
       )}
     </div>

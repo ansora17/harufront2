@@ -7,7 +7,7 @@ import {
   setMonthlyLoading,
   setMonthlyError,
   clearMonthlyError,
-  fetchMonthlyMealRecordsThunk,
+  fetchMealRecordsByDateRangeThunk,
 } from "../../slices/mealSlice";
 import {
   fetchMonthlyMeals,
@@ -68,45 +68,31 @@ function Record() {
       nickname: loginState.nickname,
     });
 
-    const loadMonthlyData = async () => {
-      const targetMonth = selectedDate.getMonth();
-      const targetYear = selectedDate.getFullYear();
+    const loadData = async () => {
+      // 3개월 전부터 현재까지의 데이터를 가져옴
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 3);
 
       console.log("🔍 API 호출 시작:", {
-        targetYear,
-        targetMonth: targetMonth + 1, // 실제 월 번호
-        selectedDate: selectedDate.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
         memberId,
       });
 
-      // 이미 해당 월 데이터가 있고, Redux 월과 일치하면 스킵
-      if (
-        currentMonth === targetMonth &&
-        currentYear === targetYear &&
-        monthlyMealRecords.length > 0
-      ) {
-        console.log("⏭️ 이미 데이터가 있어서 스킵:", {
-          currentMonth,
-          currentYear,
-          recordsLength: monthlyMealRecords.length,
-        });
-        return;
-      }
-
       dispatch(setMonthlyLoading(true));
       dispatch(clearMonthlyError());
-      dispatch(setCurrentMonth({ month: targetMonth, year: targetYear }));
 
       dispatch(
-        fetchMonthlyMealRecordsThunk({
+        fetchMealRecordsByDateRangeThunk({
           memberId,
-          year: targetYear,
-          month: targetMonth,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
         })
       );
     };
 
-    loadMonthlyData();
+    loadData();
   }, [selectedDate, dispatch, memberId, isLoggedIn]); // selectedDate, memberId, 로그인 상태 변경 시마다 월별 데이터 로드
 
   // 🔍 실제 데이터 내용 확인
