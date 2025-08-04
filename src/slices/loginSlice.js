@@ -19,8 +19,6 @@ const initState = {
 
 const loadMemberCookie = () => {
   const memberInfo = getCookie("member");
-  console.log("🍪 === 쿠키 로드 과정 시작 ===");
-  console.log("🍪 원본 쿠키 데이터:", memberInfo);
 
   if (memberInfo) {
     // 닉네임 디코딩
