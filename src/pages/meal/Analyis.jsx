@@ -7,13 +7,15 @@ import {
   setSelectedDate,
   fetchDailyMealRecordsThunk,
   saveMealRecordThunk,
+  setSelectedMeal,
 } from "../../slices/mealSlice";
 import axios from "axios";
 import MealCalendarModal from "../../components/meal/MealCalendarModal";
 import FormSelect from "../../components/mypage/FormSelect";
 import TimePickerModal from "../../components/meal/TimePickerModal";
 import MealTypeModal from "../../components/meal/MealTypeModal";
-import DatePickerModal from "../../components/meal/DatePickerModal";
+import { Calendar } from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 function Analyis() {
   const fileInputRef = useRef(null);
@@ -212,7 +214,7 @@ function Analyis() {
           sodium: result.sodium || 0,
           fiber: result.fiber || 0,
           gram: result.totalAmount || "알 수 없음",
-          quantity: result.quantity || 1,
+          quantity: result.quantity || "알 수 없음",
           foodCategory: result.foodCategory || "알 수 없음",
         };
 
@@ -637,7 +639,6 @@ function Analyis() {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-      weekday: "short",
     });
   };
 
@@ -647,14 +648,33 @@ function Analyis() {
       <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="날짜를 입력해 주세요"
-            value={timestamp ? formatDate(timestamp) : ""}
-            onClick={() => setIsDateModalOpen(true)}
-            readOnly
-            className="input input-bordered flex-1 text-center cursor-pointer"
-          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="날짜를 입력해 주세요"
+              value={timestamp ? formatDate(timestamp) : ""}
+              onClick={() => setIsDateModalOpen(!isDateModalOpen)}
+              className="input input-bordered w-full text-center cursor-pointer"
+            />
+            {/* 인라인 캘린더 */}
+            {isDateModalOpen && (
+              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
+                <Calendar
+                  onClickDay={(value) => {
+                    const date = new Date(value);
+                    if (timestamp) {
+                      date.setHours(timestamp.getHours());
+                      date.setMinutes(timestamp.getMinutes());
+                    }
+                    setTimestamp(date);
+                    setIsDateModalOpen(false);
+                  }}
+                  value={timestamp ? new Date(timestamp) : new Date()}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
           <input
             type="text"
             placeholder="시간을 입력해 주세요"
@@ -670,14 +690,12 @@ function Analyis() {
                 : ""
             }
             onClick={() => setIsTimeModalOpen(true)}
-            readOnly
             className="input input-bordered flex-1 text-center cursor-pointer"
           />
           <input
             type="text"
             value={selectedMeal || "식사 타입 선택"}
             onClick={() => setIsMealTypeModalOpen(true)}
-            readOnly
             className="input input-bordered flex-1 text-center cursor-pointer"
           />
         </div>
@@ -722,10 +740,10 @@ function Analyis() {
                       handleRemoveImage(0); // 첫 번째 이미지 삭제
                     }
                   }}
-                  className="absolute top-4 right-4 bg-red-500/90 text-white rounded-full px-3 py-2 flex items-center justify-center cursor-pointer hover:bg-red-600/90 transition-colors"
+                  className="absolute top-4 right-4 text-white rounded-full flex items-center justify-center cursor-pointer"
                   title="이미지 전체 삭제"
                 >
-                  이미지 삭제
+                  <img src="/images/Trash.png" alt="" />
                 </button>
               </>
             ) : (
@@ -1011,7 +1029,7 @@ function Analyis() {
                   −
                 </button>
                 <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                  {resultData[selectedFoodIndex].quantity || 1}
+                  {resultData[selectedFoodIndex]?.quantity || 0}
                 </div>
                 <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
                   ＋
@@ -1155,29 +1173,11 @@ function Analyis() {
         open={isMealTypeModalOpen}
         onClose={() => setIsMealTypeModalOpen(false)}
         onConfirm={(type) => {
-          // selectedMeal 업데이트 로직 필요
+          // Redux 상태 업데이트
+          dispatch(setSelectedMeal(type));
+          console.log("선택된 식사 타입:", type);
         }}
-      />
-
-      <DatePickerModal
-        open={isDateModalOpen}
-        onClose={() => setIsDateModalOpen(false)}
-        onConfirm={(dateString) => {
-          if (dateString) {
-            const date = new Date(dateString);
-            if (timestamp) {
-              date.setHours(timestamp.getHours());
-              date.setMinutes(timestamp.getMinutes());
-            }
-            setTimestamp(date);
-          }
-        }}
-        initialDate={
-          timestamp
-            ? formatDate(timestamp).replace(/\./g, "-").replace(/\s.*/, "")
-            : ""
-        }
-        memberId={memberId}
+        initialType={selectedMeal}
       />
 
       <TimePickerModal
