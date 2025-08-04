@@ -225,7 +225,7 @@ function Result() {
 
         <div className="border-b border-gray-300">
           {/* 이미지 업로드 박스 */}
-          <div className="bg-gray-200 h-60 sm:h-64 md:h-82 rounded-xl flex items-center justify-center mb-6">
+          <div className="bg-gray-200 h-60 sm:h-64 md:h-92 rounded-xl flex items-center justify-center mb-6">
             {mealRecord.imageUrl ? (
               <img
                 src={mealRecord.imageUrl}
@@ -534,6 +534,34 @@ function Result() {
             </div>
           </>
         )}
+
+        {/* 🔥 사용자 체중 입력 섹션 */}
+        <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
+          <div className="flex justify-between font-bold text-2xl ">
+            <h2 className="text-lg sm:text-xl font-semibold">체중 기록</h2>
+          </div>
+        </div>
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 font-medium">현재 체중:</span>
+              <span className="font-bold text-purple-500">
+                {mealRecord.recordWeight
+                  ? `${mealRecord.recordWeight}`
+                  : "기록 없음"}
+              </span>
+              <span className="text-gray-600 font-medium">kg</span>
+            </div>
+            {/* {currentUser && currentUser.height && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">키:</span>
+                <span className="font-bold text-purple-500">
+                  {currentUser.height} cm
+                </span>
+              </div>
+            )} */}
+          </div>
+        </div>
 
         {/* 🔥 메모 입력 필드 추가 */}
         <div className="rounded-xl pt-7 pr-7 pb-3 ps-0">
