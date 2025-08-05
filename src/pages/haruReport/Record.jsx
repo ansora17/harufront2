@@ -118,42 +118,41 @@ function Record() {
 
   // 날짜 클릭 핸들러
   const handleDateClick = (date) => {
-    // 🔥 입력된 date 유효성 검사
     if (!date) {
       console.error("🚨 날짜가 null 또는 undefined:", date);
       return;
     }
 
-    // 🔥 Date 객체가 아닌 경우 변환 시도
     let validDate;
     if (date instanceof Date) {
-      validDate = date;
+      validDate = new Date(date);
     } else {
       validDate = new Date(date);
     }
 
-    // 🔥 유효한 Date 객체인지 확인
     if (isNaN(validDate.getTime())) {
       console.error("🚨 유효하지 않은 날짜 형식:", date);
       return;
     }
 
+    validDate.setHours(0, 0, 0, 0);
+
     setSelectedDate(validDate);
     setSelectedDates((prev) => {
-      const dateStr = validDate.toISOString().split("T")[0];
-
       const exists = prev.some((d) => {
-        if (!d || isNaN(d.getTime())) return false;
-        return d.toISOString().split("T")[0] === dateStr;
+        const prevDate = new Date(d);
+        prevDate.setHours(0, 0, 0, 0);
+        return prevDate.getTime() === validDate.getTime();
       });
 
       if (exists) {
         return prev.filter((d) => {
-          if (!d || isNaN(d.getTime())) return false;
-          return d.toISOString().split("T")[0] !== dateStr;
+          const prevDate = new Date(d);
+          prevDate.setHours(0, 0, 0, 0);
+          return prevDate.getTime() !== validDate.getTime();
         });
       } else {
-        return [...prev, validDate];
+        return [...prev, validDate]; // 다시 이전 날짜들과 함께 유지하도록 수정
       }
     });
   };
@@ -164,63 +163,24 @@ function Record() {
 
     const result = selectedDates
       .flatMap((date) => {
-        // 🔥 Date 객체 유효성 검사 추가
         if (!date || isNaN(date.getTime())) {
           console.error("🚨 유효하지 않은 날짜:", date);
           return [];
         }
 
-        // 선택된 날짜의 시작과 끝 시간을 한국 시간대 기준으로 설정
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        // 정확한 날짜 비교를 위해 시간을 0으로 설정
+        const selectedDate = new Date(date);
+        selectedDate.setHours(0, 0, 0, 0);
 
-        const filtered = monthlyMealRecords.filter((record) => {
-          // 🔥 record 전체 구조 확인
+        return monthlyMealRecords.filter((record) => {
+          const recordDate = new Date(record.modifiedAt || record.createDate);
+          recordDate.setHours(0, 0, 0, 0);
 
-          // 🔥 다양한 날짜 필드명 시도 (modifiedAt 우선)
-          const possibleDateField =
-            record.modifiedAt ||
-            record.createDate ||
-            record.createdDate ||
-            record.date ||
-            record.dateTime ||
-            record.created_at ||
-            record.updatedDate ||
-            record.updateDate;
-
-          if (!possibleDateField) {
-            console.warn("🚨 날짜 필드를 찾을 수 없음:", {
-              availableFields: Object.keys(record),
-              record: record,
-            });
-            return false;
-          }
-
-          const recordDate = new Date(possibleDateField);
-
-          // 🔥 recordDate 유효성 검사 추가
-          if (isNaN(recordDate.getTime())) {
-            console.error("🚨 유효하지 않은 날짜:", possibleDateField);
-            return false;
-          }
-
-          // 날짜만 비교 (시간 제외)
-          const recordDateOnly = recordDate.toISOString().split("T")[0];
-          const selectedDateOnly = date.toISOString().split("T")[0];
-
-          const isInRange = recordDate >= startOfDay && recordDate <= endOfDay;
-          const isSameDate = recordDateOnly === selectedDateOnly;
-
-          // 🔥 더 확실한 방법: 문자열 날짜 비교도 사용
-          return isSameDate || isInRange;
+          // 정확히 같은 날짜인 경우만 반환
+          return recordDate.getTime() === selectedDate.getTime();
         });
-
-        return filtered;
       })
       .sort((a, b) => {
-        // 🔥 modifiedAt으로 소팅 (최신 순)
         const dateA = new Date(a.modifiedAt || a.createDate);
         const dateB = new Date(b.modifiedAt || b.createDate);
         return dateB - dateA;
@@ -288,12 +248,12 @@ function Record() {
       return acc;
     }, {});
 
-    // 각 날짜별 식사를 최신 시간순으로 정렬 (최신이 위로)
+    // 각 날짜별 식사를 최신 시간순으로 정렬
     Object.keys(groupedByDate).forEach((date) => {
       groupedByDate[date].sort((a, b) => {
         const timeA = new Date(a.modifiedAt || a.createDate);
         const timeB = new Date(b.modifiedAt || b.createDate);
-        return timeB - timeA; // 최신순 정렬
+        return timeB - timeA;
       });
     });
 
@@ -376,16 +336,23 @@ function Record() {
                     {/* 날짜별 카드 묶음 */}
                     <div className="border border-gray-300 rounded-2xl p-4 sm:p-6 bg-white shadow">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold">{date}</h3>
+                        <h3 className="text-mb font-semibold text-gray-700">
+                          {date}
+                        </h3>
                         <button
                           className="text-gray-400 hover:text-gray-600 transition-colors"
                           onClick={() => {
-                            // 선택된 날짜 목록에서 해당 날짜만 제거 (숨기기)
                             const targetDate = new Date(date);
+                            targetDate.setHours(0, 0, 0, 0);
+
                             setSelectedDates((prev) =>
-                              prev.filter(
-                                (d) => d.toLocaleDateString("ko-KR") !== date
-                              )
+                              prev.filter((d) => {
+                                const prevDate = new Date(d);
+                                prevDate.setHours(0, 0, 0, 0);
+                                return (
+                                  prevDate.getTime() !== targetDate.getTime()
+                                );
+                              })
                             );
                           }}
                         >
