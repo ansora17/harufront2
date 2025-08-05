@@ -188,7 +188,16 @@ function Result() {
           <input
             type="text"
             value={
-              mealRecord.modifiedAt ? mealRecord.modifiedAt.split("T")[0] : ""
+              mealRecord.modifiedAt
+                ? new Date(mealRecord.modifiedAt)
+                    .toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })
+                    .replace(/\./g, ".")
+                    .replace(/\s/g, " ")
+                : ""
             }
             placeholder="날짜를 입력해 주세요"
             className="input input-bordered flex-1 text-center"
@@ -296,10 +305,10 @@ function Result() {
                     : mealRecord.totalFat || mealRecord.fat || 0,
                 ],
                 [
-                  "수량",
+                  "나트륨",
                   mealRecord.foods && Array.isArray(mealRecord.foods)
                     ? mealRecord.foods.reduce(
-                        (sum, food) => sum + (food.quantity || 0),
+                        (sum, food) => sum + (food.sodium || 0),
                         0
                       )
                     : mealRecord.totalQuantity || 0,

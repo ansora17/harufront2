@@ -111,17 +111,29 @@ function Meal() {
                 day: "2-digit",
                 weekday: "short",
               })
-              .replace(/\./g, "-")
+              .replace(/\./g, ".")
               .replace(/\s/g, " ")}
           </div>
           <div
-            className="text-center text-lg sm:text-2xl font-bold cursor-pointer"
-            onClick={() => changeDate(1)}
+            className={`text-center text-lg sm:text-2xl font-bold cursor-pointer ${
+              new Date(selectedDate).toDateString() ===
+              new Date().toDateString()
+                ? "text-gray-400 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={() => {
+              // 오늘 날짜면 아무 동작도 하지 않음
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const current = new Date(selectedDate);
+              current.setHours(0, 0, 0, 0);
+              if (current >= today) return; // 오늘이거나 미래면 이동 불가
+              changeDate(1);
+            }}
           >
             〉
           </div>
         </div>
-
         {/* 로딩 상태 - 스켈레톤 UI */}
         {isLoading && (
           <>
@@ -219,13 +231,13 @@ function Meal() {
                 <div>
                   <div className="text-md mb-4 pr-10 sm:pr-24">
                     <span className="font-bold text-sm sm:text-base">
-                      단백질 <span className="text-yellow">{totalProtein}</span>
-                      g
+                      단백질{" "}
+                      <span className="text-yellow-500">{totalProtein}</span>g
                     </span>
                   </div>
                   <div className="bg-gray-200 rounded-full h-4 mb-2">
                     <div
-                      className="bg-gradient-to-r from-yellow to-yellow-700 h-4 rounded-full"
+                      className="bg-gradient-to-r from-yellow to-yellow-500 h-4 rounded-full"
                       style={{
                         width: `${Math.min((totalProtein / 60) * 100, 100)}%`,
                       }}
@@ -263,9 +275,7 @@ function Meal() {
                       <img
                         className="rounded-xl h-[180px] w-full object-cover"
                         src={
-                          record.imageUrl ||
-                          record.image ||
-                          "/images/food_1.jpg"
+                          record.imageUrl || record.image || "/images/noimg.jpg"
                         }
                         alt="음식 사진"
                         onError={(e) => {
@@ -297,9 +307,11 @@ function Meal() {
                         </span>
                       </h2>
                       <div className="text-[16px] font-semibold flex gap-4">
-                        <p>
-                          탄{" "}
-                          <span className="text-green">
+                        <p className="flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-full bg-green-700 text-white text-xs flex items-center justify-center">
+                            탄
+                          </span>
+                          <span className="text-black">
                             {record.totalCarbs ||
                               record.carbs ||
                               (record.foods
@@ -309,11 +321,13 @@ function Meal() {
                                   )
                                 : 0)}
                           </span>
-                          g
+                          <span className="text-black">g</span>
                         </p>
-                        <p>
-                          단{" "}
-                          <span className="text-yellow">
+                        <p className="flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-full bg-yellow-500 text-white text-xs flex items-center justify-center">
+                            단
+                          </span>
+                          <span className="text-black">
                             {record.totalProtein ||
                               record.protein ||
                               (record.foods
@@ -323,11 +337,13 @@ function Meal() {
                                   )
                                 : 0)}
                           </span>
-                          g
+                          <span className="text-black">g</span>
                         </p>
-                        <p>
-                          지{" "}
-                          <span className="text-red">
+                        <p className="flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-full bg-red-700 text-white text-xs flex items-center justify-center">
+                            지
+                          </span>
+                          <span className="text-black">
                             {record.totalFat ||
                               record.fat ||
                               (record.foods
@@ -337,7 +353,7 @@ function Meal() {
                                   )
                                 : 0)}
                           </span>
-                          g
+                          <span className="text-black">g</span>
                         </p>
                       </div>
                     </div>
