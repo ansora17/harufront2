@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function MealCard({ meal, onClose }) {
+  const navigate = useNavigate();
   // 시간 포맷팅 함수
   const formatTime = (dateString) => {
     if (!dateString) return "";
@@ -11,8 +13,19 @@ export default function MealCard({ meal, onClose }) {
     });
   };
 
+  // 식사 상세 페이지로 이동하는 함수
+  const handleMealClick = () => {
+    // meal.id가 있는 경우에만 이동
+    if (meal.id) {
+      navigate(`/dashboard/result/${meal.id}`);
+    }
+  };
+
   return (
-    <div className="bg-gray-50 rounded-2xl p-3 sm:p-4 shadow-sm">
+    <div
+      className="bg-gray-50 rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onClick={handleMealClick}
+    >
       <div className="flex gap-4">
         {/* 왼쪽: 이미지 */}
         <div className="shrink-0">

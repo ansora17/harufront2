@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080", // Back to 8080 after backend fix
+  baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8080",
   withCredentials: true, // 🔥 This enables cookies to be sent with requests
 });
 

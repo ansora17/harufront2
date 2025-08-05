@@ -22,7 +22,15 @@ const WeightChart = ({ period }) => {
   const monthlyMealRecords = useSelector(
     (state) => state.meal.monthlyMealRecords
   );
-  const targetWeight = loginState.weight || 65; // 기본값 65kg
+  // 목표 체중 계산: (키(cm) - 100) x 0.9
+  const calculateTargetWeight = (height) => {
+    if (!height) return 65; // 기본값
+    return Math.round((height - 100) * 0.9 * 10) / 10; // 소수점 첫째자리까지
+  };
+
+  console.log("사용자 키:", loginState.height);
+  const targetWeight = calculateTargetWeight(loginState.height);
+  console.log("계산된 목표 체중:", targetWeight);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -330,7 +338,11 @@ const WeightChart = ({ period }) => {
               />
               <ReferenceLine
                 y={targetWeight}
-                label={{ value: "목표", position: "topRight", fontSize: 12 }}
+                label={{
+                  value: `목표 ${targetWeight}kg`,
+                  position: "right",
+                  fontSize: 12,
+                }}
                 stroke="#ff7300"
                 strokeDasharray="5 5"
                 strokeWidth={2}

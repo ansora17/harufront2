@@ -15,8 +15,6 @@ function Result() {
   const [selectedFoodIndex, setSelectedFoodIndex] = useState(null);
   const navigate = useNavigate(); // 🔥 페이지 이동을 위한 navigate 추가
 
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api";
-
   // 🔥 현재 사용자 정보 가져오기
   const currentUser = useSelector((state) => state.login);
   console.log("Current user data:", currentUser);
@@ -52,7 +50,9 @@ function Result() {
         }
 
         // API 호출
-        const response = await axios.get(`${API_BASE_URL}/meals/${mealId}`);
+        const API_BASE_URL =
+          import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+        const response = await axios.get(`${API_BASE_URL}/api/meals/${mealId}`);
 
         console.log("API 응답:", response.data);
 
@@ -181,7 +181,7 @@ function Result() {
 
   return (
     <>
-      <SubLayout to={"/"} menu={"식단분석"} label={"식사요약"} />
+      <SubLayout to={"/dashboard"} menu={"식단분석"} label={"식사요약"} />
       <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
@@ -615,8 +615,10 @@ function Result() {
                   return;
                 }
 
+                const API_BASE_URL =
+                  import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
                 const response = await axios.delete(
-                  `http://localhost:8080/api/meals/${mealId}`
+                  `${API_BASE_URL}/api/meals/${mealId}`
                 );
 
                 console.log("삭제 응답:", response);
