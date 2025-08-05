@@ -82,6 +82,7 @@ function Result() {
       };
 
       console.log("수정할 데이터:", updateData);
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL + "/api"; // 프록시 사용을 위해 변경
 
       const response = await axios.put(
         `${API_BASE_URL}/meals/${mealId}`,
