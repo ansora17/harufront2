@@ -5,6 +5,7 @@ import SubLayout from "../../layout/SubLayout";
 import SearchBar from "../../components/community/board/SearchBar";
 import ChatBot from "../../components/chatbot/ChatBot";
 import { issueApi } from "../../api/authIssueUserApi/issueApi";
+import api from "../../api/authIssueUserApi/axiosConfig";
 
 function Issue() {
   const navigate = useNavigate();
@@ -41,12 +42,21 @@ function Issue() {
     // Load issues from API
     const fetchIssues = async () => {
       try {
-        const response = await issueApi.getHotIssues(8); // 8은 핫이슈 게시판 ID
+        // 고정된 adminId 8 사용 (포스트맨에서 작동하는 값)
+        const response = await issueApi.getHotIssues(8);
+        console.log("Fetched Issues:", response); // 데이터 확인용 로그
+
         if (response) {
           setIssues(Array.isArray(response) ? response : [response]);
         }
       } catch (error) {
         console.error("Error fetching issues:", error);
+        // 자세한 에러 정보 출력
+        if (error.response) {
+          console.error("Status:", error.response.status);
+          console.error("Data:", error.response.data);
+          console.error("Headers:", error.response.headers);
+        }
         alert("이슈 목록을 불러오는데 실패했습니다.");
       }
     };
