@@ -153,7 +153,7 @@ function MainBoard() {
     : sortedPosts;
 
   return (
-    <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6 mb-10">
       <SubLayout to="/community" menu="커뮤니티" label="자유게시판" />
 
       {/* 에러 상태 */}

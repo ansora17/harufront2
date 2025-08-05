@@ -26,7 +26,7 @@ const root = createBrowserRouter([
         element: <Meal />,
       },
       {
-        path: "analyis", // 기존 컴포넌트명에 맞춤
+        path: "analyis",
         element: <Analyis />,
       },
       {

@@ -151,15 +151,14 @@ function Analyis() {
     try {
       setIsLoading(true);
 
-      // 🔥 새로운 텍스트 분석 API 호출
-      const AI_API_URL =
-        import.meta.env.VITE_AI_API_URL || "http://localhost:8080";
+      // 🔥 새로운 텍스트 분석 API 호출  // import.meta.env.VITE_AI_API_URL ||
+      const AI_API_URL = import.meta.env.VITE_PYTHON_URL;
 
-      console.log("📤 텍스트 분석 API 요청:", {
-        url: `${AI_API_URL}/api/meals/analyze-food-text`,
-        foodName: foodName,
-        env: import.meta.env.VITE_AI_API_URL ? "설정됨" : "기본값 사용",
-      });
+      // console.log("📤 텍스트 분석 API 요청:", {
+      //   url: `${AI_API_URL}/api/meals/analyze-food-text`,
+      //   foodName: foodName,
+      //   env: import.meta.env.VITE_AI_API_URL ? "설정됨" : "기본값 사용",
+      // });
 
       // 🔥 서버 연결 테스트 추가
       try {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SubLayout from "../../../layout/SubLayout";
+import { issueApi } from "../../../api/authIssueUserApi/issueApi";
 
 function IssueDetail() {
   const { id } = useParams();
@@ -19,17 +20,24 @@ function IssueDetail() {
       return;
     }
 
-    // Load issue data
-    const storedIssues = JSON.parse(localStorage.getItem("issues")) || [];
-    const foundIssue = storedIssues.find((i) => i.id === parseInt(id));
+    // Load issue data using API
+    const fetchIssue = async () => {
+      try {
+        const response = await issueApi.getHotIssues(id);
+        if (!response) {
+          alert("게시글을 찾을 수 없습니다.");
+          navigate("/community/issue");
+          return;
+        }
+        setIssue(response);
+      } catch (error) {
+        console.error("Error fetching issue:", error);
+        alert("게시글을 불러오는데 실패했습니다.");
+        navigate("/community/issue");
+      }
+    };
 
-    if (!foundIssue) {
-      alert("게시글을 찾을 수 없습니다.");
-      navigate("/community/issue");
-      return;
-    }
-
-    setIssue(foundIssue);
+    fetchIssue();
   }, [id, isLoggedIn, navigate]);
 
   // 🔍 로딩 상태가 아직 확인되지 않은 경우 로딩 상태 표시

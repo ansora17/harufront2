@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import SubLayout from "../../layout/SubLayout";
 import SearchBar from "../../components/community/board/SearchBar";
 import ChatBot from "../../components/chatbot/ChatBot";
+import { issueApi } from "../../api/authIssueUserApi/issueApi";
 
 function Issue() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ function Issue() {
   const [searchInput, setSearchInput] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10; // 페이지당 게시물 수를 10개로 변경
 
   // Initialize issues data
   useEffect(() => {
@@ -37,31 +38,20 @@ function Issue() {
       return;
     }
 
-    // Load issues from localStorage or dummy
-    const storedIssues = localStorage.getItem("issues");
-    if (storedIssues) {
-      const parsedIssues = JSON.parse(storedIssues);
-      setIssues(parsedIssues);
-    } else {
-      const dummyIssues = [
-        {
-          id: 1,
-          title: "사이트 버그 제보",
-          content: "모바일 화면 깨짐 현상 발생",
-          writer: "toby",
-          date: "2025.07.15",
-        },
-        {
-          id: 2,
-          title: "기능 요청",
-          content: "검색 기능이 있으면 좋겠어요",
-          writer: "관리자",
-          date: "2025.07.16",
-        },
-      ];
-      localStorage.setItem("issues", JSON.stringify(dummyIssues));
-      setIssues(dummyIssues);
-    }
+    // Load issues from API
+    const fetchIssues = async () => {
+      try {
+        const response = await issueApi.getHotIssues(8); // 8은 핫이슈 게시판 ID
+        if (response) {
+          setIssues(Array.isArray(response) ? response : [response]);
+        }
+      } catch (error) {
+        console.error("Error fetching issues:", error);
+        alert("이슈 목록을 불러오는데 실패했습니다.");
+      }
+    };
+
+    fetchIssues();
   }, [isLoggedIn, navigate]);
 
   const handleSearch = () => {
@@ -108,7 +98,7 @@ function Issue() {
   );
 
   return (
-    <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6 mb-10">
       <SubLayout to="/community" menu="커뮤니티" label="핫이슈" />
 
       <div className="mt-6 sm:mt-10 space-y-6">
@@ -181,20 +171,29 @@ function Issue() {
                       <Link
                         to={`/community/issue/${issue.id}`}
                         className="text-gray-900 transition-colors duration-150 line-clamp-1 hover:text-purple-600"
-                        onClick={() =>
-                          localStorage.setItem("selectedIssueId", issue.id)
-                        }
                       >
                         {issue.title}
                       </Link>
                     </td>
                     <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
-                      {issue.writer}
+                      관리자
                     </td>
                     <td className="py-4 px-3 sm:px-6 text-gray-600 text-sm">
-                      <span className="hidden sm:inline">{issue.date}</span>
+                      <span className="hidden sm:inline">
+                        {issue.createdAt
+                          ? new Date(issue.createdAt).toLocaleDateString()
+                          : "날짜 없음"}
+                      </span>
                       <span className="sm:hidden">
-                        {issue.date.split(".").slice(1, 3).join(".")}
+                        {issue.createdAt
+                          ? new Date(issue.createdAt).toLocaleDateString(
+                              "ko-KR",
+                              {
+                                month: "numeric",
+                                day: "numeric",
+                              }
+                            )
+                          : "날짜 없음"}
                       </span>
                     </td>
                   </tr>

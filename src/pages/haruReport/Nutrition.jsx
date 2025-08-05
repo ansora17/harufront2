@@ -23,6 +23,70 @@ import ChatBot from "../../components/chatbot/ChatBot";
 const Nutrition = () => {
   const dispatch = useDispatch();
 
+  // AI 모달 상태
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState("");
+  const [isLoadingAdvice, setIsLoadingAdvice] = useState(false);
+
+  // AI 조언 생성 함수
+  const generateAIAdvice = async () => {
+    setIsLoadingAdvice(true);
+    try {
+      // 현재 영양소 데이터 가져오기
+      const nutritionData = getSelectedDetailDateNutritionData();
+      const dailyCalories = getSelectedDetailDateTotalCalories();
+      const targetWeight =
+        Math.round((loginState.height - 100) * 0.9 * 10) / 10;
+      const currentWeight = loginState.weight || 0;
+
+      // AI 프롬프트 생성
+      const prompt = `
+        사용자 정보:
+        - 이름: ${nickname}
+        - 현재 체중: ${currentWeight}kg
+        - 목표 체중: ${targetWeight}kg
+        - 오늘의 영양 섭취:
+          * 총 칼로리: ${dailyCalories}kcal
+          * 탄수화물: ${nutritionData.carbs}g
+          * 단백질: ${nutritionData.protein}g
+          * 지방: ${nutritionData.fat}g
+
+        위 정보를 바탕으로 사용자의 영양 섭취 상태를 분석하고, 
+        목표 체중 달성을 위한 구체적인 조언을 해주세요. 
+        답변은 친근하고 격려하는 톤으로 작성해주세요.
+      `;
+
+      // TODO: OpenAI API 호출 로직 구현
+      // 임시로 하드코딩된 응답 사용
+      const response = `
+        ${nickname}님, 안녕하세요! 오늘의 영양 섭취를 분석해보았어요.
+
+        1. 칼로리 섭취: ${dailyCalories}kcal
+           - 목표 체중 ${targetWeight}kg 달성을 위해서는 적절한 수준이에요.
+
+        2. 영양소 밸런스:
+           - 탄수화물: ${nutritionData.carbs}g
+           - 단백질: ${nutritionData.protein}g
+           - 지방: ${nutritionData.fat}g
+
+        💡 조언:
+        - 단백질 섭취를 조금 더 늘려보세요. 하루 체중 1kg당 1.2~1.6g이 적절해요.
+        - 식사 시간을 규칙적으로 유지하면 더 좋은 결과를 얻을 수 있어요.
+        - 수분 섭취도 잊지 마세요!
+
+        이대로만 꾸준히 하신다면 목표 체중에 도달하실 수 있을 거예요. 
+        화이팅! 👊
+      `;
+
+      setAiAdvice(response);
+    } catch (error) {
+      console.error("AI 조언 생성 중 에러:", error);
+      setAiAdvice("죄송합니다. 조언을 생성하는 중에 문제가 발생했습니다.");
+    } finally {
+      setIsLoadingAdvice(false);
+    }
+  };
+
   // 기간 선택 상태
   const [period, setPeriod] = useState("week"); // 'week' | 'month'
   // 🔥 실제 데이터 확인을 위해 현재 날짜 사용
@@ -529,6 +593,10 @@ const Nutrition = () => {
     return totals;
   };
 
+  const { nickname, weight, profileImageUrl } = useSelector(
+    (state) => state.login
+  );
+
   return (
     <div className="w-full max-w-[1020px] mx-auto px-4 sm:px-6">
       <SubLayout to="/haruReport" menu="리포트" label="영양습관" />
@@ -536,26 +604,45 @@ const Nutrition = () => {
         {/* 월 변경 및 기간 선택 UI */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           {/* 월 변경 컨트롤 */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => changeMonth("prev")}
-              className="btn  btn-sm hover:bg-purple-100"
-              disabled={isMonthlyLoading}
-            >
-              ◀ 이전 월
-            </button>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => changeMonth("prev")}
+                className="btn  btn-sm hover:bg-purple-100"
+                disabled={isMonthlyLoading}
+              >
+                ◀ 이전 월
+              </button>
 
-            <div className="text-xl font-bold text-gray-700 min-w-[140px] text-center">
-              {formatCurrentMonth()}
+              <div className="text-xl font-bold text-gray-700 min-w-[140px] text-center">
+                {formatCurrentMonth()}
+              </div>
+
+              <button
+                onClick={() => changeMonth("next")}
+                className="btn  btn-sm hover:bg-purple-100"
+                disabled={isMonthlyLoading}
+              >
+                다음 월 ▶
+              </button>
             </div>
 
-            <button
-              onClick={() => changeMonth("next")}
-              className="btn  btn-sm hover:bg-purple-100"
-              disabled={isMonthlyLoading}
-            >
-              다음 월 ▶
-            </button>
+            <div className="flex items-center justify-center">
+              <div className="bg-purple-50 rounded-xl px-6 py-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-medium text-purple-700">
+                    {nickname} 님의 목표 체중은
+                  </span>
+                  <span className="text-xl font-bold text-purple-700">
+                    {Math.round((loginState.height - 100) * 0.9 * 10) / 10}
+                    <span className="text-lg ml-1">kg</span>
+                  </span>
+                  <span className="text-lg font-medium text-purple-700">
+                    입니다
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
