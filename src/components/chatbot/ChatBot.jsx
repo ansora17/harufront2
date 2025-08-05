@@ -20,6 +20,7 @@ export default function ChatBot() {
   const [input, setInput] = useState("");
   const [show, setShow] = useState(false);
   const [faqMode, setFaqMode] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -167,6 +168,29 @@ export default function ChatBot() {
     }
   };
 
+  // 가이드 메시지 내용을 상수로 정의
+  const guideMessage = {
+    sender: "bot",
+    text: `📚 챗봇 이용 가이드
+
+🔍 답변 가능한 주제
+• 영양 및 식단 관련 질문
+• 칼로리 계산 및 권장량
+• 운동 방법 및 추천
+• 건강한 생활 습관
+• 식품 영양 정보
+
+💡 이렇게 질문해보세요
+• "오늘 점심으로 뭘 먹으면 좋을까요?"
+• "운동 없이 살 빼는 방법 알려주세요"
+• "단백질이 많은 음식 추천해주세요"
+• "회사에서 할 수 있는 간단한 운동이 있나요?"
+• "저녁 식사 후 야식이 먹고 싶을 때는 어떻게 하나요?"
+
+ℹ️ 챗봇은 일반적인 건강/영양 정보를 제공합니다.
+구체적인 의학적 조언이 필요한 경우 전문가와 상담해주세요.`,
+  };
+
   return (
     <>
       {!show && (
@@ -193,18 +217,47 @@ export default function ChatBot() {
                 <span className="sm:hidden">하루칼로리 챗봇</span>
               </span>
             </div>
-            <div>
+            <div className="flex items-center gap-2">
+              {/* 도움말 버튼 추가 */}
               <button
                 onClick={() => {
-                  setShow(false); // 챗봇 창 닫기
-                  setFaqMode(false); // FAQ 모드 해제
+                  setMessages((prev) => [...prev, guideMessage]);
+                  // 가이드 메시지가 보이도록 스크롤
+                  setTimeout(() => {
+                    const chatContainer =
+                      document.querySelector(".chat-container");
+                    if (chatContainer) {
+                      chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                  }, 100);
+                }}
+                className="text-white opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {/* 기존 닫기 버튼 */}
+              <button
+                onClick={() => {
+                  setShow(false);
+                  setFaqMode(false);
                   setMessages([
                     {
                       sender: "bot",
                       text: `안녕하세요!\n😊 하루칼로리입니다!\n궁금한 게 있으면 물어보세요!`,
                     },
-                  ]); // ✅ 대화 초기화
-                  setInput(""); // (선택) 입력창도 초기화
+                  ]);
+                  setInput("");
                 }}
                 className="text-xl font-bold text-white"
               >
@@ -248,6 +301,55 @@ export default function ChatBot() {
             >
               검색
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 가이드 모달 추가 */}
+      {showGuide && (
+        <div className="fixed inset-0 flex items-center justify-center z-[10000]  bg-opacity-10">
+          <div className="bg-white rounded-xl max-w-md w-full mx-4 shadow-lg">
+            <div className="p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold">챗봇 이용 가이드</h3>
+                <button
+                  onClick={() => setShowGuide(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-purple-700 mb-2">
+                    답변 가능한 주제
+                  </h4>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>영양 및 식단 관련 질문</li>
+                    <li>칼로리 계산 및 권장량</li>
+                    <li>운동 방법 및 추천</li>
+                    <li>건강한 생활 습관</li>
+                    <li>식품 영양 정보</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-purple-700 mb-2">
+                    이렇게 질문해보세요
+                  </h4>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>"오늘 점심으로 뭘 먹으면 좋을까요?"</li>
+                    <li>"운동 없이 살 빼는 방법 알려주세요"</li>
+                    <li>"단백질이 많은 음식 추천해주세요"</li>
+                    <li>"회사에서 할 수 있는 간단한 운동이 있나요?"</li>
+                    <li>"저녁 식사 후 야식이 먹고 싶을 때는 어떻게 하나요?"</li>
+                  </ul>
+                </div>
+                <div className="text-xs text-gray-500 mt-4">
+                  * 챗봇은 일반적인 건강 및 영양 정보를 제공합니다. 구체적인
+                  의학적 조언이 필요한 경우 전문가와 상담해주세요.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
