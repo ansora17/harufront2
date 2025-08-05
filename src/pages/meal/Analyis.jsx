@@ -10,12 +10,6 @@ import {
   setSelectedMeal,
 } from "../../slices/mealSlice";
 import axios from "axios";
-import MealCalendarModal from "../../components/meal/MealCalendarModal";
-import FormSelect from "../../components/mypage/FormSelect";
-import TimePickerModal from "../../components/meal/TimePickerModal";
-import MealTypeModal from "../../components/meal/MealTypeModal";
-import { Calendar } from "react-calendar";
-import "react-calendar/dist/Calendar.css";
 
 function Analyis() {
   const fileInputRef = useRef(null);
@@ -29,9 +23,6 @@ function Analyis() {
   const mealRecords = useSelector((state) => state.meal.mealRecords);
   const { isLoading: isSaving } = useSelector((state) => state.meal); // 저장 로딩 상태
   const dispatch = useDispatch();
-  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
-  const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
-  const [isMealTypeModalOpen, setIsMealTypeModalOpen] = useState(false);
   const [memo, setMemo] = useState("");
   // 🔥 체중 입력을 위한 상태 추가
   const [recordWeight, setRecordWeight] = useState("");
@@ -214,7 +205,8 @@ function Analyis() {
           sodium: result.sodium || 0,
           fiber: result.fiber || 0,
           gram: result.totalAmount || "알 수 없음",
-          quantity: result.quantity || "알 수 없음",
+          quantity:
+            result.quantity && result.quantity > 0 ? result.quantity : 1, // 🔥 quantity가 0이거나 없으면 1로 설정
           foodCategory: result.foodCategory || "알 수 없음",
         };
 
@@ -328,6 +320,10 @@ function Analyis() {
           // 배열인 경우 각 음식을 개별 데이터로 변환
           foodDataArray = result.map((food, index) => {
             console.log(`🔍 음식 ${index + 1} 원본 데이터:`, food);
+            console.log(
+              `🔍 음식 ${index + 1} AI API에서 받은 quantity:`,
+              food.quantity
+            );
             const foodData = {
               name: food.foodName || "알 수 없음",
               calories: food.calories || 0,
@@ -337,7 +333,7 @@ function Analyis() {
               sodium: food.sodium || 0,
               fiber: food.fiber || 0,
               gram: food.totalAmount || "알 수 없음",
-              quantity: food.quantity || 1, // 🔥 quantity 추가
+              quantity: food.quantity && food.quantity > 0 ? food.quantity : 1, // 🔥 quantity가 0이거나 없으면 1로 설정
               foodCategory: food.foodCategory || "알 수 없음",
             };
             console.log(`🔍 음식 ${index + 1} 변환된 데이터:`, foodData);
@@ -346,6 +342,10 @@ function Analyis() {
         } else {
           // 단일 객체인 경우
           console.log("🔍 단일 음식 원본 데이터:", result);
+          console.log(
+            "🔍 단일 음식 AI API에서 받은 quantity:",
+            result.quantity
+          );
           const foodData = {
             name: result.foodName || "알 수 없음",
             calories: result.calories || 0,
@@ -355,7 +355,8 @@ function Analyis() {
             sodium: result.sodium || 0,
             fiber: result.fiber || 0,
             gram: result.totalAmount || "알 수 없음",
-            quantity: result.quantity || 1, // 🔥 quantity 추가
+            quantity:
+              result.quantity && result.quantity > 0 ? result.quantity : 1, // 🔥 quantity가 0이거나 없으면 1로 설정
             foodCategory: result.foodCategory || "알 수 없음",
           };
           console.log("🔍 단일 음식 변환된 데이터:", foodData);
@@ -554,8 +555,14 @@ function Analyis() {
     console.log("🔍 resultData 확인:", resultData);
 
     // foods 배열 생성
-    const foods = resultData.map((food) => {
-      const quantity = food.quantity || 1;
+    const foods = resultData.map((food, index) => {
+      console.log(`🔍 음식 ${index + 1} 원본 데이터:`, food);
+      console.log(`🔍 음식 ${index + 1} quantity 값:`, food.quantity);
+
+      // quantity가 0, undefined, null이면 1로 설정
+      const quantity = food.quantity && food.quantity > 0 ? food.quantity : 1;
+      console.log(`🔍 음식 ${index + 1} 최종 quantity 값:`, quantity);
+
       const foodData = {
         foodName: food.name,
         calories: Math.round((food.calories || 0) * quantity),
@@ -565,7 +572,7 @@ function Analyis() {
         sodium: Math.round((food.sodium || 0) * quantity),
         fiber: Math.round((food.fiber || 0) * quantity),
         totalAmount: food.gram || 0, // 🔥 gram을 totalAmount로 매핑
-        quantity: quantity, // 🔥 실제 데이터에서 quantity 가져오기, 없으면 1
+        quantity: quantity, // 🔥 최소 1로 설정된 quantity 값
         foodCategory: categoryMap[food.foodCategory] || "ETC", // 🔥 카테고리 매핑
       };
 
@@ -635,50 +642,28 @@ function Analyis() {
     }
   };
 
-  const formatDate = (date) => {
-    return date?.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
   return (
     <>
       <SubLayout to={"/"} menu={"식단분석"} label={"식사요약"} />
       <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="날짜를 입력해 주세요"
-              value={timestamp ? formatDate(timestamp) : ""}
-              onClick={() => setIsDateModalOpen(!isDateModalOpen)}
-              className="input input-bordered w-full text-center cursor-pointer"
-            />
-            {/* 인라인 캘린더 */}
-            {isDateModalOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
-                <Calendar
-                  onClickDay={(value) => {
-                    const date = new Date(value);
-                    if (timestamp) {
-                      date.setHours(timestamp.getHours());
-                      date.setMinutes(timestamp.getMinutes());
-                    }
-                    setTimestamp(date);
-                    setIsDateModalOpen(false);
-                  }}
-                  value={timestamp ? new Date(timestamp) : new Date()}
-                  className="w-full"
-                />
-              </div>
-            )}
-          </div>
           <input
-            type="text"
-            placeholder="시간을 입력해 주세요"
+            type="date"
+            value={timestamp ? timestamp.toISOString().split("T")[0] : ""}
+            onChange={(e) => {
+              const newDate = new Date(e.target.value);
+              if (timestamp) {
+                newDate.setHours(timestamp.getHours());
+                newDate.setMinutes(timestamp.getMinutes());
+              }
+              setTimestamp(newDate);
+            }}
+            placeholder="날짜를 입력해 주세요"
+            className="input input-bordered flex-1 text-center"
+          />
+          <input
+            type="time"
             value={
               timestamp
                 ? `${timestamp
@@ -690,15 +675,29 @@ function Analyis() {
                     .padStart(2, "0")}`
                 : ""
             }
-            onClick={() => setIsTimeModalOpen(true)}
-            className="input input-bordered flex-1 text-center cursor-pointer"
+            onChange={(e) => {
+              if (timestamp) {
+                const [hours, minutes] = e.target.value.split(":");
+                const newDate = new Date(timestamp);
+                newDate.setHours(parseInt(hours));
+                newDate.setMinutes(parseInt(minutes));
+                setTimestamp(newDate);
+              }
+            }}
+            placeholder="시간을 입력해 주세요"
+            className="input input-bordered flex-1 text-center"
           />
-          <input
-            type="text"
-            value={selectedMeal || "식사 타입 선택"}
-            onClick={() => setIsMealTypeModalOpen(true)}
-            className="input input-bordered flex-1 text-center cursor-pointer"
-          />
+          <select
+            value={selectedMeal || ""}
+            onChange={(e) => dispatch(setSelectedMeal(e.target.value))}
+            className="input input-bordered flex-1 text-center"
+          >
+            <option value="">식사 타입 선택</option>
+            <option value="BREAKFAST">아침</option>
+            <option value="LUNCH">점심</option>
+            <option value="DINNER">저녁</option>
+            <option value="SNACK">간식</option>
+          </select>
         </div>
 
         <div className="border-b border-gray-300">
@@ -1218,32 +1217,6 @@ function Analyis() {
           </div>
         </div>
       )}
-
-      {/* 모달들 */}
-      <MealTypeModal
-        open={isMealTypeModalOpen}
-        onClose={() => setIsMealTypeModalOpen(false)}
-        onConfirm={(type) => {
-          // Redux 상태 업데이트
-          dispatch(setSelectedMeal(type));
-          console.log("선택된 식사 타입:", type);
-        }}
-        initialType={selectedMeal}
-      />
-
-      <TimePickerModal
-        open={isTimeModalOpen}
-        onClose={() => setIsTimeModalOpen(false)}
-        onConfirm={(timeString) => {
-          if (timeString) {
-            const [hour, minute] = timeString.split(":");
-            const newDate = new Date(timestamp);
-            newDate.setHours(Number(hour));
-            newDate.setMinutes(Number(minute));
-            setTimestamp(newDate);
-          }
-        }}
-      />
     </>
   );
 }

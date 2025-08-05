@@ -9,6 +9,13 @@ function Result() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [memo, setMemo] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    modifiedAt: "",
+    mealType: "",
+    memo: "",
+    foods: [],
+  });
   const location = useLocation();
   const { id } = useParams(); // URL 파라미터에서 meal ID 가져오기
   const passedRecord = location.state;
@@ -30,6 +37,87 @@ function Result() {
   // 🔥 음식 카드 클릭 핸들러 추가
   const handleFoodCardClick = (index) => {
     setSelectedFoodIndex(selectedFoodIndex === index ? null : index);
+  };
+
+  // 수정 모드 토글
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  // 수정 데이터 업데이트
+  const handleEditDataChange = (field, value) => {
+    setEditData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // 음식 quantity 업데이트
+  const handleFoodQuantityChange = (foodIndex, newQuantity) => {
+    const updatedFoods = [...editData.foods];
+    updatedFoods[foodIndex] = {
+      ...updatedFoods[foodIndex],
+      quantity: newQuantity,
+    };
+    setEditData((prev) => ({
+      ...prev,
+      foods: updatedFoods,
+    }));
+  };
+
+  // 수정 저장
+  const handleSaveEdit = async () => {
+    try {
+      const mealId = id || passedRecord?.id;
+
+      if (!mealId) {
+        alert("수정할 식사 기록 ID를 찾을 수 없습니다.");
+        return;
+      }
+
+      const updateData = {
+        ...mealRecord,
+        modifiedAt: editData.modifiedAt,
+        mealType: editData.mealType,
+        memo: editData.memo,
+        foods: editData.foods,
+      };
+
+      console.log("수정할 데이터:", updateData);
+
+      const response = await axios.put(
+        `${API_BASE_URL}/meals/${mealId}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("수정 응답:", response.data);
+
+      if (response.status === 200) {
+        alert("식사 기록이 수정되었습니다.");
+        setIsEditing(false);
+        // 데이터 다시 불러오기
+        window.location.reload();
+      } else {
+        alert("수정에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("수정 오류:", error);
+      console.error("오류 응답:", error.response?.data);
+      console.error("오류 상태:", error.response?.status);
+
+      if (error.response?.status === 404) {
+        alert("수정할 식사 기록을 찾을 수 없습니다.");
+      } else if (error.response?.status === 500) {
+        alert("서버 오류가 발생했습니다.");
+      } else {
+        alert("수정 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   useEffect(() => {
@@ -114,6 +202,14 @@ function Result() {
         }
 
         setMealRecord(finalMealData);
+
+        // 편집 데이터 초기화
+        setEditData({
+          modifiedAt: finalMealData.modifiedAt || new Date().toISOString(),
+          mealType: finalMealData.mealType || "LUNCH",
+          memo: finalMealData.memo || "",
+          foods: finalMealData.foods || [],
+        });
       } catch (err) {
         console.error("식사 기록 조회 실패:", err);
         console.error("에러 상세:", err.response?.data);
@@ -185,51 +281,87 @@ function Result() {
       <div className="w-full max-w-[1020px] mx-auto px-4 py-4 pb-28">
         {/* 날짜 / 시간 / 식사타입 */}
         <div className="flex flex-row sm:flex-row gap-2 mb-4">
-          <input
-            type="text"
-            value={
-              mealRecord.modifiedAt
-                ? new Date(mealRecord.modifiedAt)
-                    .toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    })
-                    .replace(/\./g, ".")
-                    .replace(/\s/g, " ")
-                : ""
-            }
-            placeholder="날짜를 입력해 주세요"
+          {isEditing ? (
+            <input
+              type="date"
+              value={
+                editData.modifiedAt ? editData.modifiedAt.split("T")[0] : ""
+              }
+              placeholder="날짜를 입력해 주세요"
+              className="input input-bordered flex-1 text-center"
+              style={{ textAlign: "center" }}
+              onChange={(e) => {
+                const newDate = e.target.value;
+                const currentTime = editData.modifiedAt
+                  ? editData.modifiedAt.split("T")[1]
+                  : "00:00";
+                const newDateTime = `${newDate}T${currentTime}`;
+                handleEditDataChange("modifiedAt", newDateTime);
+              }}
+            />
+          ) : (
+            <div className="input input-bordered flex-1 text-center flex items-center justify-center">
+              {mealRecord.modifiedAt
+                ? (() => {
+                    const date = new Date(mealRecord.modifiedAt);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    return `${year}. ${month}. ${day}.`;
+                  })()
+                : "날짜를 입력해 주세요"}
+            </div>
+          )}
+          {isEditing ? (
+            <input
+              type="time"
+              value={
+                editData.modifiedAt
+                  ? editData.modifiedAt.split("T")[1]?.slice(0, 5)
+                  : ""
+              }
+              placeholder="시간을 입력해 주세요"
+              className="input input-bordered flex-1 text-center"
+              style={{ textAlign: "center" }}
+              onChange={(e) => {
+                const newTime = e.target.value;
+                const currentDate = editData.modifiedAt
+                  ? editData.modifiedAt.split("T")[0]
+                  : new Date().toISOString().split("T")[0];
+                const newDateTime = `${currentDate}T${newTime}`;
+                handleEditDataChange("modifiedAt", newDateTime);
+              }}
+            />
+          ) : (
+            <div className="input input-bordered flex-1 text-center flex items-center justify-center">
+              {mealRecord.modifiedAt
+                ? (() => {
+                    const date = new Date(mealRecord.modifiedAt);
+                    const hours = date.getHours();
+                    const minutes = String(date.getMinutes()).padStart(2, "0");
+                    const ampm = hours >= 12 ? "오후" : "오전";
+                    const displayHours =
+                      hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                    return `${ampm} ${displayHours}:${minutes}`;
+                  })()
+                : "시간을 입력해 주세요"}
+            </div>
+          )}
+          <select
+            value={isEditing ? editData.mealType : mealRecord.mealType}
             className="input input-bordered flex-1 text-center"
-            readOnly
-          />
-          <input
-            type="text"
-            value={
-              mealRecord.modifiedAt
-                ? mealRecord.modifiedAt.split("T")[1]?.slice(0, 5)
-                : ""
-            }
-            placeholder="시간을 입력해 주세요"
-            className="input input-bordered flex-1 text-center"
-            readOnly
-          />
-          <input
-            type="text"
-            value={
-              mealRecord.mealType === "BREAKFAST"
-                ? "아침"
-                : mealRecord.mealType === "LUNCH"
-                ? "점심"
-                : mealRecord.mealType === "DINNER"
-                ? "저녁"
-                : mealRecord.mealType === "SNACK"
-                ? "간식"
-                : mealRecord.mealType
-            }
-            readOnly
-            className="input input-bordered flex-1 text-center"
-          />
+            disabled={!isEditing}
+            onChange={(e) => {
+              if (isEditing) {
+                handleEditDataChange("mealType", e.target.value);
+              }
+            }}
+          >
+            <option value="BREAKFAST">아침</option>
+            <option value="LUNCH">점심</option>
+            <option value="DINNER">저녁</option>
+            <option value="SNACK">간식</option>
+          </select>
         </div>
 
         <div className="border-b border-gray-300">
@@ -311,7 +443,7 @@ function Result() {
                         (sum, food) => sum + (food.sodium || 0),
                         0
                       )
-                    : mealRecord.totalQuantity || 0,
+                    : mealRecord.totalSodium || 0,
                 ],
               ].map(([label, value], i) => (
                 <div
@@ -340,12 +472,12 @@ function Result() {
         <div className="overflow-x-auto mb-8 pt-1 scroll-smooth">
           <div className="flex gap-4 w-max px-1 pb-2 min-w-full">
             {/* 음식 추가 버튼 */}
-            <div
+            {/* <div
               className="min-w-[44px] h-44 bg-purple-500 rounded-xl flex items-center justify-center text-white text-2xl cursor-pointer"
               // onClick={handleImageClick}
             >
               +
-            </div>
+            </div> */}
 
             {/* 🔥 음식 카테고리 아이콘 카드 */}
             {mealRecord.foods &&
@@ -388,7 +520,7 @@ function Result() {
                         }
                       })()}
                     </div>
-                    <button
+                    {/* <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveImage(i);
@@ -396,7 +528,7 @@ function Result() {
                       className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
                     >
                       ×
-                    </button>
+                    </button> */}
                   </div>
                   <div className="flex items-center gap-1 mt-2">
                     <p className="text-sm font-medium text-center">
@@ -455,13 +587,47 @@ function Result() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                  <button
+                    className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500"
+                    onClick={() => {
+                      if (isEditing) {
+                        const currentQuantity =
+                          editData.foods[selectedFoodIndex]?.quantity || 0;
+                        const newQuantity = Math.max(1, currentQuantity - 1);
+                        handleFoodQuantityChange(
+                          selectedFoodIndex,
+                          newQuantity
+                        );
+                      }
+                    }}
+                    disabled={!isEditing}
+                  >
                     −
                   </button>
                   <div className="w-10 h-8 flex items-center justify-center border border-gray-300 rounded-md">
-                    {mealRecord.foods[selectedFoodIndex].quantity || 1}
+                    {isEditing
+                      ? editData.foods[selectedFoodIndex]?.quantity || 0
+                      : (() => {
+                          const quantity =
+                            mealRecord.foods[selectedFoodIndex].quantity;
+                          return quantity || 0;
+                        })()}
                   </div>
-                  <button className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500">
+                  <button
+                    className="w-8 h-8 rounded-full bg-gray-200 text-lg font-bold text-purple-500"
+                    onClick={() => {
+                      if (isEditing) {
+                        const currentQuantity =
+                          editData.foods[selectedFoodIndex]?.quantity || 0;
+                        const newQuantity = currentQuantity + 1;
+                        handleFoodQuantityChange(
+                          selectedFoodIndex,
+                          newQuantity
+                        );
+                      }
+                    }}
+                    disabled={!isEditing}
+                  >
                     ＋
                   </button>
                 </div>
@@ -589,17 +755,44 @@ function Result() {
           <textarea
             className="textarea textarea-bordered w-full"
             placeholder="메모를 입력하세요 (예: 저녁은 간단하게 샌드위치와 주스)"
-            value={mealRecord.memo}
-            onChange={(e) => setMemo(e.target.value)}
+            value={isEditing ? editData.memo : mealRecord.memo || ""}
+            readOnly={!isEditing}
+            onChange={(e) => {
+              if (isEditing) {
+                handleEditDataChange("memo", e.target.value);
+              } else {
+                setMemo(e.target.value);
+              }
+            }}
             rows={2}
           />
         </div>
 
         {/* 기록 버튼 */}
         <div className="pt-8">
-          <button className="btn bg-purple-500 text-white w-full rounded-lg py-6 text-base mb-2">
-            기록하기
-          </button>
+          {!isEditing ? (
+            <button
+              className="btn bg-purple-500 text-white w-full rounded-lg py-6 text-base mb-2"
+              onClick={handleEditToggle}
+            >
+              수정하기
+            </button>
+          ) : (
+            <div className="flex gap-2 mb-2">
+              <button
+                className="btn bg-green-700 text-white flex-1 rounded-lg py-6 text-base"
+                onClick={handleSaveEdit}
+              >
+                저장하기
+              </button>
+              <button
+                className="btn bg-gray-500 text-white flex-1 rounded-lg py-6 text-base"
+                onClick={handleEditToggle}
+              >
+                취소하기
+              </button>
+            </div>
+          )}
           <button
             className="btn bg-red text-white w-full rounded-lg py-6 text-base"
             onClick={async () => {
