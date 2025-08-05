@@ -239,6 +239,9 @@ export const saveMealRecordThunk = createAsyncThunk(
   "meal/saveMealRecord",
   async ({ memberId, mealData }, { rejectWithValue }) => {
     try {
+      console.log("🔍 saveMealRecordThunk - 전송할 데이터:", mealData);
+      console.log("🔍 saveMealRecordThunk - foods 배열:", mealData.foods);
+      
       const response = await axios.post(
         `${API_BASE_URL}/meals?memberId=${memberId}`,
         mealData,
@@ -257,8 +260,19 @@ export const saveMealRecordThunk = createAsyncThunk(
   }
 );
 
+// localStorage에서 선택된 식사 타입 가져오기
+const getStoredSelectedMeal = () => {
+  try {
+    const stored = localStorage.getItem("selectedMeal");
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error("localStorage에서 selectedMeal 읽기 실패:", error);
+    return null;
+  }
+};
+
 const initialState = {
-  selectedMeal: null,
+  selectedMeal: getStoredSelectedMeal(),
   selectedDate: new Date().toISOString().slice(0, 10),
   mealRecords: [], // 특정 날짜 데이터 (Meal 페이지용)
   monthlyMealRecords: [], // 🔥 월별 전체 데이터 (Record 페이지용)
@@ -280,6 +294,12 @@ const mealSlice = createSlice({
   reducers: {
     setSelectedMeal: (state, action) => {
       state.selectedMeal = action.payload;
+      // localStorage에 선택된 식사 타입 저장
+      try {
+        localStorage.setItem("selectedMeal", JSON.stringify(action.payload));
+      } catch (error) {
+        console.error("localStorage에 selectedMeal 저장 실패:", error);
+      }
     },
     setSelectedDate: (state, action) => {
       state.selectedDate = action.payload;
