@@ -11,34 +11,40 @@ function IssueDetail() {
   const isLoggedIn = currentUser.isLoggedIn;
 
   const [issue, setIssue] = useState(null);
-  const [showMenu, setShowMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showMenu, setShowMenu] = useState(false); // 메뉴 상태 추가
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      alert("로그인이 필요합니다.");
-      navigate("/member/login");
-      return;
-    }
-
-    // Load issue data using API
-    const fetchIssue = async () => {
+    const fetchIssueDetail = async () => {
       try {
-        const response = await issueApi.getHotIssues(id);
-        if (!response) {
-          alert("게시글을 찾을 수 없습니다.");
-          navigate("/community/issue");
-          return;
+        setLoading(true);
+        const response = await issueApi.getIssue(id);
+        console.log("서버 응답:", response);
+
+        // 백엔드 DTO 구조에 맞춘 데이터 처리
+        if (response) {
+          setIssue({
+            id: response.id,
+            title: response.title,
+            content: response.content,
+            reference: response.reference,
+            adminId: response.adminId,
+            role: response.role,
+            createdAt: response.createdAt,
+            updatedAt: response.updatedAt,
+          });
         }
-        setIssue(response);
       } catch (error) {
-        console.error("Error fetching issue:", error);
-        alert("게시글을 불러오는데 실패했습니다.");
-        navigate("/community/issue");
+        console.error("상세 정보 조회 에러:", error);
+        setError("이슈 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchIssue();
-  }, [id, isLoggedIn, navigate]);
+    fetchIssueDetail();
+  }, [id]);
 
   // 🔍 로딩 상태가 아직 확인되지 않은 경우 로딩 상태 표시
   if (isLoggedIn === undefined) {
@@ -93,29 +99,51 @@ function IssueDetail() {
                 {issue.title}
               </h1>
               <div className="relative">
-                {showMenu && isAdmin && (
-                  <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 py-2 w-32">
-                    <button
-                      onClick={() =>
-                        navigate(`/community/issue/update/${issue.id}`)
-                      }
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      수정하기
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                    >
-                      삭제하기
-                    </button>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  ⋮
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={() =>
+                          navigate(`/community/issue/update/${issue.id}`)
+                        }
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={handleDelete}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex items-center text-sm text-gray-500 gap-4">
-              <span>{issue.writer ? `${issue.writer}` : "알 수 없음"}</span>
-              <span>{issue.date}</span>
+            <div className="text-sm text-gray-500 mt-2 space-y-1">
+              {/* adminId 대신 "관리자"로 표시 */}
+              <p>작성자: 관리자</p>
+              <p>작성일: {new Date(issue.createdAt).toLocaleString()}</p>
+              {issue.reference && (
+                <p>
+                  참고 링크:{" "}
+                  <a
+                    href={issue.reference}
+                    className="text-blue-500 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {issue.reference}
+                  </a>
+                </p>
+              )}
             </div>
           </div>
 
