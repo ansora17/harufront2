@@ -375,9 +375,23 @@ function Record() {
                   <React.Fragment key={date}>
                     {/* 날짜별 카드 묶음 */}
                     <div className="border border-gray-300 rounded-2xl p-4 sm:p-6 bg-white shadow">
-                      <h3 className="text-mb font-semibold text-gray-700 mb-1 mr-3 flex justify-end">
-                        {date}
-                      </h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">{date}</h3>
+                        <button
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          onClick={() => {
+                            // 선택된 날짜 목록에서 해당 날짜만 제거 (숨기기)
+                            const targetDate = new Date(date);
+                            setSelectedDates((prev) =>
+                              prev.filter(
+                                (d) => d.toLocaleDateString("ko-KR") !== date
+                              )
+                            );
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
 
                       {meals.map((meal, index) => (
                         <div key={meal.mealId} className="relative">
